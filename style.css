@@ -1,0 +1,181 @@
+body { 
+    font-size: 15px;
+    margin: 0;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    display: flex;
+    flex-direction: row; /* Ensure sidebar and main content are horizontally aligned */
+    height: 100vh; /* Full height */
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 80px;
+    background-color: #12171e;
+    padding: 0.4rem 0.8rem;
+    transition: width 0.5s;
+    z-index: 1000;
+    overflow-y: auto; /* Enable vertical scrolling */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar.active {
+    width: 250px;
+}
+
+.sidebar #btn {
+    position: absolute;
+    color: #fff;
+    top: 1rem;
+    left: 50%;
+    font-size: 1.2rem;
+    transform: translateX(-50%);
+    cursor: pointer;
+}
+
+.sidebar.active #btn {
+    left: 90%;
+}
+
+.sidebar .top .logo {
+    color: #fff;
+    display: flex;
+    height: 50px;
+    width: 100%;
+    align-items: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.sidebar.active .top .logo {
+    opacity: 1;
+}
+
+.sidebar ul {
+    padding: 0;
+    list-style-type: none;
+    width: 100%;
+}
+
+.sidebar ul li {
+    position: relative;
+    list-style-type: none;
+    height: 50px;
+    width: 90%;
+    margin: 0.8rem auto;
+    line-height: 50px;
+}
+
+.sidebar ul li a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #fff;
+    border-radius: 0.8rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.sidebar ul li a:hover {
+    background-color: #fff;
+    color: #12171e;
+}
+
+.sidebar ul li a i {
+    min-width: 50px;
+    text-align: center;
+    height: 50px;
+    border-radius: 12px;
+    line-height: 50px;
+}
+
+.sidebar .nav-item {
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.sidebar.active .nav-item {
+    opacity: 1;
+}
+
+.main-content {
+    transition: margin-left 0.5s;
+    margin-left: 80px;
+    padding: 2rem;
+    flex-grow: 1;
+}
+
+.sidebar.active ~ .main-content {
+    margin-left: 250px;
+}
+.containers {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Centers vertically */
+    min-height: 10vh; /* Ensure it takes up full height of the viewport */
+    width: 100%;
+    flex-wrap: wrap; /* Allows wrapping if there's too much content */
+    padding: 0 20px; /* Adds space on the left and right to avoid content touching edges */
+}
+.status-card {
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 10px; /* Reduced padding to reduce the gap */
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 350px; /* Set a fixed width for better control */
+    margin: 5px; /* Reduced margin between cards */
+}
+
+.status-card h4 {
+    font-size: 20px;
+    margin-bottom: 5px; /* Reduced bottom margin */
+}
+
+.status-card h1 {
+    font-size: 28px;
+    margin-bottom: 8px; /* Reduced bottom margin */
+}
+
+.status-card p {
+    font-size: 18px;
+    margin-bottom: 4px; /* Reduced bottom margin */
+}
+
+.status-card ul {
+    padding-left: 18px;
+    font-size: 12px;
+}
+
+.status-card:hover {
+    transform: scale(1.03);
+}
+
+.invisible-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.invisible-table th, .invisible-table td {
+    border: none;
+    padding: 10px;
+    vertical-align: top;
+}
+.form-control {
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin: 0;
+}
+@media (max-width: 767px) {
+    .invisible-table th, .invisible-table td {
+        display: block;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+}
+
+

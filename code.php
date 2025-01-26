@@ -109,8 +109,17 @@ if (isset($_POST['update_form'])) {
         return mysqli_real_escape_string($conn, $workType);
     }, $workTypes));
 
-    // Determine the status based on the safety briefing record
-    $status = (!empty($briefDate) && !empty($briefTime) && !empty($briefConducted)) ? 'in progress' : 'pending';
+    // Determine the status based on the safety briefing record and current status
+    if ($status === 'completed') {
+        // If the status is already "complete," keep it as "complete"
+        $status = 'completed';
+    } elseif (!empty($briefDate) && !empty($briefTime) && !empty($briefConducted)) {
+        // Change to "in progress" only if all safety briefing fields are filled
+        $status = 'in progress';
+    } else {
+        // Default to "pending" if no other conditions are met
+        $status = 'pending';
+    }
 
     // Start transaction 
     mysqli_begin_transaction($conn);

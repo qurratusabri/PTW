@@ -129,7 +129,6 @@
         "paging": true,        // Enable pagination
         "searching": true,     // Enable search box
         "info": true           // Show table information
-        //apa apa
     });
 });
     </script>

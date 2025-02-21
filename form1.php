@@ -125,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                             </div>
                             <div class="col-md-4">
                             <label for="icNo">IC No./Passport No:</label>
-                                <input type="number" name="icNo" class="form-control" required>
+                                <input type="text" name="icNo" class="form-control" required>
                             </div>
                             <div class="col-md-4">
                             <label for="contactNo">Contact No.:</label>

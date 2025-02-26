@@ -247,6 +247,11 @@ if(isset($_POST['save_form'])) {
         return mysqli_real_escape_string($conn, $workType);
     }, $workTypes));
 
+    // Combine hazard into a single string
+    $hazardString = implode(", ", array_map(function($hazards) use ($conn) {
+        return mysqli_real_escape_string($conn, $hazards);
+    }, $hazard));
+
     // Combine ppe into a single string
     $ppesString = implode(", ", array_map(function($ppe) use ($conn) {
         return mysqli_real_escape_string($conn, $ppe);
@@ -267,7 +272,7 @@ if(isset($_POST['save_form'])) {
 
     // Insert form data
     $column = ($userType == 'admin' ? 'adminID' : 'applicantID');
-    $query = "INSERT INTO form (name,services,status,remark,durationFrom,durationTo,timeFrom,timeTo,companyName,svName,icNo,contactNo,longTermContract,workersName,passNo,exactLocation,workType,briefDate,briefTime,briefConducted,ppe,worksite,$column) VALUES ('$name','$services','$status','$remark','$durationFrom','$durationTo','$timeFrom','$timeTo','$companyName','$svName','$icNo','$contactNo','$longTermContract','$workersNamesString','$passNosString','$exactLocation','$workTypesString','$hazardString','$briefDate','$briefTime','$briefConducted','$ppesString','$worksitesString','$userID')";
+    $query = "INSERT INTO form (name,services,status,remark,durationFrom,durationTo,timeFrom,timeTo,companyName,svName,icNo,contactNo,longTermContract,workersName,passNo,exactLocation,workType,hazards,briefDate,briefTime,briefConducted,ppe,worksite,$column) VALUES ('$name','$services','$status','$remark','$durationFrom','$durationTo','$timeFrom','$timeTo','$companyName','$svName','$icNo','$contactNo','$longTermContract','$workersNamesString','$passNosString','$exactLocation','$workTypesString','$hazardString','$briefDate','$briefTime','$briefConducted','$ppesString','$worksitesString','$userID')";
 
     // Debugging: Print SQL query
     error_log("SQL query: " . $query);

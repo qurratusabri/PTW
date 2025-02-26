@@ -471,64 +471,63 @@ if (isset($_GET['id'])) {
                                 </div>
                                 <div class="row mb-3">
                                 <div class="col-md-4">
-    <h4>Status</h4>
-    <input type="text" name="status" value="<?=$ptw['status'];?>" class="form-control" disabled>
-</div>
-<div class="col-md-4">
-    <h4>Closure / Stop Working Order</h4>
-    <input type="radio" name="status" value="completed" onchange="checkStatus()">
-    <label for="completed">Complete Work</label>
-    <input type="radio" name="status" value="stop work" onchange="checkStatus()">
-    <label for="stopWork">Stop Work</label>
-    <input type="radio" name="status" value="cancel" onchange="checkStatus()">
-    <label for="cancel">Cancel Work</label>
-</div>
-<div class="col-md-4">
-    <h4>Reason of Stop work / Cancel work</h4>
-    <input type="text" name="remark" id="remark" value="<?=$ptw['remark'];?>" class="form-control">
-</div>
-
-<script>
-function checkStatus() {
-    var status = document.querySelector('input[name="status"]:checked').value;
-    var remarkField = document.getElementById('remark');
-    
-    if (status === 'cancel' || status === 'stop work') {
-        remarkField.required = true;
-    } else {
-        remarkField.required = false;
-    }
-}
-</script>
+                                <h4>Status</h4>
+                                <input type="text" name="status" value="<?=$ptw['status'];?>" class="form-control" disabled>
                             </div>
-                                <div class="col-md-4">
-                                <button type="submit" name="update_form" class="btn btn-primary">
-                                            Update Form
-                                        </button>
-                                    </div>
-                                </form>
-                                <?php
+                            <div class="col-md-4">
+                                <h4>Closure / Stop Working Order</h4>
+                                <input type="radio" name="status" value="completed" onchange="checkStatus()">
+                                <label for="completed">Complete Work</label>
+                                <input type="radio" name="status" value="stop work" onchange="checkStatus()">
+                                <label for="stopWork">Stop Work</label>
+                                <input type="radio" name="status" value="cancel" onchange="checkStatus()">
+                                <label for="cancel">Cancel Work</label>
+                            </div>
+                            <div class="col-md-4">
+                                <h4>Reason of Stop work / Cancel work</h4>
+                                <input type="text" name="remark" id="remark" value="<?=$ptw['remark'];?>" class="form-control">
+                            </div>
+                            <script>
+                            function checkStatus() {
+                                var status = document.querySelector('input[name="status"]:checked').value;
+                                var remarkField = document.getElementById('remark');
+                                
+                                if (status === 'cancel' || status === 'stop work') {
+                                    remarkField.required = true;
+                                } else {
+                                    remarkField.required = false;
+                                }
                             }
-                            else
-                            {
-                                echo "<h4>No Record Found</h4>";
+                            </script>
+                                </div>
+                                    <div class="col-md-4">
+                                    <button type="submit" name="update_form" class="btn btn-primary">
+                                                Update Form
+                                            </button>
+                                        </div>
+                                    </form>
+                                    <?php
+                                }
+                                else
+                                {
+                                    echo "<h4>No Record Found</h4>";
+                                }
                             }
-                        }
-                        ?>
+                            ?>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
-    <script>
-        function confirmLogout() {
-        var confirmation = confirm("Are you sure you want to logout?");
-        return confirmation;
-    }
-        </script>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="script.js"></script>
+        <script>
+            function confirmLogout() {
+            var confirmation = confirm("Are you sure you want to logout?");
+            return confirmation;
+        }
+            </script>
 </body>
 </html>

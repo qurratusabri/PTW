@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 require 'dbconn.php';
 if(isset($_POST['delete_form'])) {
@@ -7,18 +9,25 @@ if(isset($_POST['delete_form'])) {
     // Start transaction
     mysqli_begin_transaction($conn);
     try {
-        // Delete from form table
+        $query_select = "SELECT file FROM permit WHERE id='$applicantID'";
+        $result_select = mysqli_query($conn, $query_select);
+        $row = mysqli_fetch_assoc($result_select);
+        $filePath = $row['file'];
+
+        $query_permit = "DELETE FROM permit WHERE id='$applicantID'";
+        $query_run_permit = mysqli_query($conn, $query_permit);
+        if (!$query_run_permit) {
+            throw new Exception('Signature deletion failed: ' . mysqli_error($conn));
+        }
+
         $query_form = "DELETE FROM form WHERE id='$applicantID'";
         $query_run_form = mysqli_query($conn, $query_form);
         if (!$query_run_form) {
             throw new Exception('Form deletion failed: ' . mysqli_error($conn));
         }
 
-        // Delete from permit table
-        $query_permit = "DELETE FROM permit WHERE id='$applicantID'";
-        $query_run_permit = mysqli_query($conn, $query_permit);
-        if (!$query_run_permit) {
-            throw new Exception('Signature deletion failed: ' . mysqli_error($conn));
+        if (!empty($filePath) && file_exists($filePath)) {
+            unlink($filePath); // Delete file
         }
 
         // Commit transaction
@@ -33,11 +42,12 @@ if(isset($_POST['delete_form'])) {
     }
 }
 
+
 if (isset($_POST['update_form'])) {
     $applicantID = mysqli_real_escape_string($conn, $_POST['applicantID']);
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $services = mysqli_real_escape_string($conn, $_POST['services']);
-    $status = mysqli_real_escape_string($conn, $_POST['status']); // Retrieve selected status
+    $status = mysqli_real_escape_string($conn, $_POST['status']);
     $remark = mysqli_real_escape_string($conn, $_POST['remark']); 
     $durationFrom = mysqli_real_escape_string($conn, $_POST['durationFrom']);
     $durationTo = mysqli_real_escape_string($conn, $_POST['durationTo']);
@@ -121,6 +131,46 @@ if (isset($_POST['update_form'])) {
         $status = 'pending';
     }
 
+    if (!empty($_FILES['files']['name'][0])) {
+        $filePaths = []; 
+    
+        foreach ($_FILES['files']['name'] as $key => $fileName) {
+            $fileTmp = $_FILES['files']['tmp_name'][$key];
+            $fileSize = $_FILES['files']['size'][$key];
+            $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+    
+            $allowedExts = ['pdf', 'jpg', 'jpeg', 'png'];
+            if (!in_array($fileExt, $allowedExts)) {
+                die("Error: Invalid file type ($fileExt). Only PDF, JPG, JPEG, PNG allowed.");
+            }
+    
+            if ($fileSize > 5000000) {
+                die("Error: File too large. Max size is 5MB.");
+            }
+    
+            $uploadDir = "uploads/";
+            $uniqueFileName = time() . "_" . $fileName;
+            $filePath = $uploadDir . $uniqueFileName;
+    
+            if (move_uploaded_file($fileTmp, $filePath)) {
+                $filePaths[] = $filePath; 
+            } else {
+                die("Error: File upload failed for $fileName.");
+            }
+        }
+    
+        $sql_fetch_existing = "SELECT file FROM permit WHERE id='$applicantID'";
+        $result = mysqli_query($conn, $sql_fetch_existing);
+        $row = mysqli_fetch_assoc($result);
+        $existingFiles = !empty($row['file']) ? explode(",", $row['file']) : [];
+    
+        $allFiles = array_merge($existingFiles, $filePaths);
+        $storedFilePath = implode(",", $allFiles);
+    } else {
+        // Keep old files if no new upload
+        $storedFilePath = $existing_permit['file'];
+    }
+
     // Start transaction 
     mysqli_begin_transaction($conn);
     try {
@@ -185,13 +235,16 @@ if (isset($_POST['update_form'])) {
                 nameS='" . (!empty($nameS) ? $nameS : $existing_permit['nameS']) . "', 
                 positionS='" . (!empty($positionS) ? $positionS : $existing_permit['positionS']) . "', 
                 dateS='" . (!empty($dateS) ? $dateS : $existing_permit['dateS']) . "', 
-                timeS='" . (!empty($timeS) ? $timeS : $existing_permit['timeS']) . "' 
+                timeS='" . (!empty($timeS) ? $timeS : $existing_permit['timeS']) . "',
+                file = '" . mysqli_real_escape_string($conn, $storedFilePath) . "'
             WHERE id='$applicantID'";
+
         } else {
             // Insert new permit record
-            $query_permit = "INSERT INTO permit (id, signC, nameC, positionC, dateC, timeC, signA, nameA, positionA, dateA, timeA, signI, nameI, positionI, dateI, timeI, signS, nameS, positionS, dateS, timeS) VALUES 
-            ('$applicantID', '$signC', '$nameC', '$positionC', '$dateC', '$timeC', '$signA', '$nameA', '$positionA', '$dateA', '$timeA', '$signI', '$nameI', '$positionI', '$dateI', '$timeI', '$signS', '$nameS', '$positionS', '$dateS', '$timeS')";
+            $query_permit = "INSERT INTO permit (id, signC, nameC, positionC, dateC, timeC, signA, nameA, positionA, dateA, timeA, signI, nameI, positionI, dateI, timeI, signS, nameS, positionS, dateS, timeS, file) VALUES 
+            ('$applicantID', '$signC', '$nameC', '$positionC', '$dateC', '$timeC', '$signA', '$nameA', '$positionA', '$dateA', '$timeA', '$signI', '$nameI', '$positionI', '$dateI', '$timeI', '$signS', '$nameS', '$positionS', '$dateS', '$timeS', '$storedFilePath')";
         }
+        echo "Debug: SQL Query - " . $query_permit . "<br>";
 
         $query_run_permit = mysqli_query($conn, $query_permit);
         if (!$query_run_permit){

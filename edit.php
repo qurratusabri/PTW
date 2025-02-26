@@ -109,7 +109,7 @@ if (isset($_GET['id'])) {
                                 $ptw = mysqli_fetch_array($query_run);
                                 ?>
 
-                                <form action="code.php" method="POST">
+                                <form action="code.php" method="POST" enctype="multipart/form-data">
                                     <input type="hidden" name="applicantID" value="<?= $ptw['id']; ?>">
                                     <div class="row mb-4">
                                     <div class="col-md-4">
@@ -487,6 +487,13 @@ if (isset($_GET['id'])) {
                                 <h4>Reason of Stop work / Cancel work</h4>
                                 <input type="text" name="remark" id="remark" value="<?=$ptw['remark'];?>" class="form-control">
                             </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                <h4 for="file">Upload Files</h4>
+                                <input type="file" name="files[]" id="file" multiple >
+                            </div>
+                            </div>
                             <script>
                             function checkStatus() {
                                 var status = document.querySelector('input[name="status"]:checked').value;
@@ -499,7 +506,6 @@ if (isset($_GET['id'])) {
                                 }
                             }
                             </script>
-                                </div>
                                     <div class="col-md-4">
                                     <button type="submit" name="update_form" class="btn btn-primary">
                                                 Update Form

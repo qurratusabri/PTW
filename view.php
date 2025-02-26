@@ -387,19 +387,50 @@ $stmt->close();
                                 echo $remark;
                                 ?>
                             </div>
+                            <h4>Uploaded Files:</h4>
+                            <div class="card-body">
+                                <?php if (!empty($permit['file'])): ?>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                                        <?php 
+                                            $filePaths = explode(",", $permit['file']); // Convert to array
 
-                        </div>
+                                            foreach ($filePaths as $filePath) {
+                                                $filePath = trim($filePath);
+                                                $fileExt = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+                                                if (file_exists($filePath)) {
+                                                    if (in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
+                                                        // Bigger and responsive container for images
+                                                        echo "<div style='display: flex; justify-content: center; align-items: center; width: 300px; height: 200px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
+                                                                <img src='$filePath' alt='Uploaded Image' style='max-width: 100%; max-height: 100%; object-fit: cover;'>
+                                                            </div>";
+                                                    } elseif ($fileExt === 'pdf') {
+                                                        // Show link to open PDF
+                                                        echo "<a href='$filePath' target='_blank' style='text-decoration: none; color: #007bff; font-weight: bold;'>View PDF File</a>";
+                                                    } else {
+                                                        echo "<p>Unsupported file format.</p>";
+                                                    }
+                                                } else {
+                                                    echo "<p>File not found.</p>";
+                                                }
+                                            }
+                                        ?>
+                                    </div>
+                                <?php else: ?>
+                                    <p>No file uploaded.</p>
+                                <?php endif; ?>
+                            </div>
+                            </div>
                          </div>
+                    </div>
                 </div>
-            </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
-    <script>
-    function confirmLogout() {
-        var confirmation = confirm("Are you sure you want to logout?");
-        return confirmation;
-    }
-</script>
-
-</body>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="script.js"></script>
+                <script>
+                function confirmLogout() {
+                    var confirmation = confirm("Are you sure you want to logout?");
+                    return confirmation;
+                }
+            </script>
+    </body>
 </html>

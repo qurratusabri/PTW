@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
     <div class="container mt-5">
         <?php include('message.php'); ?>
         <div class="row">
-            <div class="col-md-12 border">
+            <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <h4>Project Add 
@@ -90,7 +90,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                     <div class="card-body">
                         <form action="code.php" method="POST" onsubmit="return validateForm()">
                         <div class="row mb-4">
-                            <fieldset>
                         <h4>KPJ KLANG SPECIALIST HOSPITAL (Project Manager / Coordinator)</h4>
                             <div class="col-md-4">
                                 <label>Applicant's Name*</label>
@@ -123,7 +122,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                                 <div class="col-md-4">
                                 <label for="timeTo">To:</label>
                                 <input type="time" name="timeTo" class="form-control" required>
-                                    </fieldset>
                             </div>
                             </div>
                             <div class="row mb-3">

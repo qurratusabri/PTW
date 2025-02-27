@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 // Count the number of newly created projects that are still in progress
-$sql_new_projects = "SELECT COUNT(*) AS new_count FROM form WHERE status = 'in progress' AND is_notified = FALSE";
+$sql_new_projects = "SELECT COUNT(*) AS new_count FROM form WHERE status = 'pending' AND is_notified = FALSE";
 $result_new_projects = $conn->query($sql_new_projects);
 if ($result_new_projects->num_rows > 0) {
     $row = $result_new_projects->fetch_assoc();

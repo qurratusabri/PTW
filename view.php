@@ -171,6 +171,7 @@ $stmt->close();
                                 <?=$ptw['timeTo'];?>
                             </div>
                             </div>
+                            <hr>
                             <div class="row mb-3">
                             <h4>CONTRACTOR</h4>
                             <div class="col-md-4">
@@ -194,6 +195,7 @@ $stmt->close();
                                 <?=$ptw['longTermContract'];?>
                             </div>
                             </div>
+                            <hr>
                             <div class="row mb-3">
                             <div class="col-md-4">
                                 <h4>Contractor Worker's Names</h4>
@@ -221,7 +223,6 @@ $stmt->close();
                                 <?php endif; ?> 
                                 </tbody> 
                             </table>
-
                                         </p>
                                             </div>
                                         <div class="col-md-4">
@@ -236,6 +237,7 @@ $stmt->close();
                                                 <?=$ptw['exactLocation'];?>
                                         </div>
                                             </div>
+                                            <hr>
                                         <table class="invisible-table">
                                             <tr>
                                                 <th>
@@ -274,6 +276,7 @@ $stmt->close();
                                                 </td>
                                             </tr>
                                         </table>
+                                        <hr>
                                         <div class="row mb-3">
                                         <div class="row mb-3">
                                         <h4>SAFETY BRIEFING RECORD</h4>
@@ -290,12 +293,11 @@ $stmt->close();
                                             <?= !empty($ptw['briefConducted']) ? $ptw['briefConducted'] : 'No safety briefing conducted yet'; ?>
                                         </div>
                                     </div>
-
+                                    <hr>
+                                    <div class="row mb-3">
                                     <?php
-                                    // Determine the status based on the safety briefing record
                                     $status = (!empty($ptw['briefDate']) && !empty($ptw['briefTime']) && !empty($ptw['briefConducted'])) ? 'in progress' : 'pending';
                                     ?>
-                                            <div class="row mb-3">
                                     <?php if ($permit): ?> 
                                         <h4>Permit Authorisation Section</h4>
                                     <div class="col-md-3">
@@ -379,6 +381,7 @@ $stmt->close();
                                 <p>No signature found for this form.</p> 
                                 <?php endif; ?>
                             </div>
+                            <hr>
                             <div class="col-md-3">
                                 <h4>Remark</h4>
                                 <?php
@@ -387,6 +390,7 @@ $stmt->close();
                                 echo $remark;
                                 ?>
                             </div>
+                            <hr>
                             <h4>Uploaded Files:</h4>
                             <div class="card-body">
                                 <?php if (!empty($permit['file'])): ?>
@@ -394,27 +398,46 @@ $stmt->close();
                                         <?php 
                                             $filePaths = explode(",", $permit['file']); // Convert to array
 
+                                            // Separate images and PDFs
+                                            $imageFiles = [];
+                                            $pdfFiles = [];
+
                                             foreach ($filePaths as $filePath) {
                                                 $filePath = trim($filePath);
                                                 $fileExt = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
-                                                if (file_exists($filePath)) {
-                                                    if (in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
-                                                        // Bigger and responsive container for images
-                                                        echo "<div style='display: flex; justify-content: center; align-items: center; width: 300px; height: 200px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);'>
-                                                                <img src='$filePath' alt='Uploaded Image' style='max-width: 100%; max-height: 100%; object-fit: cover;'>
-                                                            </div>";
-                                                    } elseif ($fileExt === 'pdf') {
-                                                        // Show link to open PDF
-                                                        echo "<a href='$filePath' target='_blank' style='text-decoration: none; color: #007bff; font-weight: bold;'>View PDF File</a>";
-                                                    } else {
-                                                        echo "<p>Unsupported file format.</p>";
-                                                    }
-                                                } else {
-                                                    echo "<p>File not found.</p>";
+                                                if (in_array($fileExt, ['jpg', 'jpeg', 'png'])) {
+                                                    $imageFiles[] = $filePath;
+                                                } elseif ($fileExt === 'pdf') {
+                                                    $pdfFiles[] = $filePath;
                                                 }
                                             }
                                         ?>
+
+                                        <!-- Display Images Side by Side -->
+                                        <?php if (!empty($imageFiles)): ?>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                                                <?php foreach ($imageFiles as $imagePath): ?>
+                                                    <?php $imageName = basename($imagePath); ?>
+                                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                                                        <div style="display: flex; justify-content: center; align-items: center; width: 300px; height: 200px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                                            <img src="<?= $imagePath ?>" alt="Uploaded Image" style="max-width: 100%; max-height: 100%; object-fit: cover;">
+                                                        </div>
+                                                        <a href="<?= $imagePath ?>" download="<?= $imageName ?>" style="text-decoration: none; color: #007bff; font-weight: bold;">Download Image</a>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <!-- Display PDFs in a Column -->
+                                        <?php if (!empty($pdfFiles)): ?>
+                                            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px;">
+                                                <?php foreach ($pdfFiles as $pdfPath): ?>
+                                                    <?php $pdfName = basename($pdfPath); ?>
+                                                    <a href="<?= $pdfPath ?>" target="_blank" style="display: block; text-decoration: none; color: #007bff; font-weight: bold;"><?= $pdfName ?></a>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 <?php else: ?>
                                     <p>No file uploaded.</p>

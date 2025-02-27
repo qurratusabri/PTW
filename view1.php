@@ -162,6 +162,7 @@ $stmt->close();
                                 <?=$ptw['timeTo'];?>
                             </div>
                             </div>
+                            <hr>
                             <div class="row mb-3">
                             <h4>CONTRACTOR</h4>
                             <div class="col-md-4">
@@ -185,6 +186,7 @@ $stmt->close();
                                 <?=$ptw['longTermContract'];?>
                             </div>
                             </div>
+                            <hr>
                             <div class="row mb-3">
                             <div class="col-md-4">
                                 <h4>Contractor Worker's Names</h4>
@@ -223,6 +225,7 @@ $stmt->close();
                                                 <?=$ptw['exactLocation'];?>
                                         </div>
                                             </div>
+                                            <hr>
                                         <table class="invisible-table">
                                             <tr>
                                                 <th>
@@ -253,6 +256,7 @@ $stmt->close();
                                                 </td>
                                             </tr>
                                         </table>
+                                        <hr>
                                             <div class="row mb-3">
                                             <h4>SAFETY BRIEFING RECORD</h4>
                                             <div class="col-md-4">
@@ -268,6 +272,7 @@ $stmt->close();
                                                 <?=$ptw['briefConducted'];?> 
                                             </div>
                                         </div>
+                                        <hr>
                                             <div class="row mb-3">
                                     <?php if ($permit): ?> 
                                         <h4>Permit Authorisation Section</h4>
@@ -352,10 +357,12 @@ $stmt->close();
                                 <p>No signature found for this form.</p> 
                                 <?php endif; ?>
                             </div>
+                            <hr>
                             <div class="col-md-3">
                             <h4>Remark</h4>
                                 <?=$ptw['remark'];?>
                             </div>
+                            <hr>
                             <h4>Uploaded Files:</h4>
                             <div class="card-body">
                                 <?php if (!empty($permit['file'])): ?>

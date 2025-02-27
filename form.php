@@ -80,7 +80,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
     <div class="container mt-5">
         <?php include('message.php'); ?>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12 border">
                 <div class="card">
                     <div class="card-header">
                         <h4>Project Add 
@@ -90,13 +90,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                     <div class="card-body">
                         <form action="code.php" method="POST" onsubmit="return validateForm()">
                         <div class="row mb-4">
+                            <fieldset>
                         <h4>KPJ KLANG SPECIALIST HOSPITAL (Project Manager / Coordinator)</h4>
                             <div class="col-md-4">
-                                <label>Applicant's Name</label>
+                                <label>Applicant's Name*</label>
                                 <input type="text" name="name" class="form-control" required>
                             </div>
                             <div class="col-md-4"> 
-                                <label for="services">Services</label> 
+                                <label for="services">Services*</label> 
                                 <select name="services" class="form-select" required> 
                                     <?php while ($row = $services->fetch_assoc()) { ?> 
                                         <option value="<?php echo $row['serviceName']; ?>"><?php echo $row['serviceName']; ?></option> 
@@ -105,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                             </div>
                             </div>
                             <div class="row mb-4">
-                                <h6>Work Duration (date)</h6>
+                                <h6>Work Duration (date)*</h6>
                                 <div class="col-md-4">
                                 <label for="durationFrom">From:</label>
                                 <input type="date" name="durationFrom" class="form-control" required></div>
@@ -115,41 +116,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                             </div>
                             </div>
                             <div class="row mb-4">
-                                <h6>Work Time</h6>
+                                <h6>Work Time*</h6>
                                 <div class="col-md-4">
                                 <label for="timeFrom">From:</label>
                                 <input type="time" name="timeFrom" class="form-control" required></div>
                                 <div class="col-md-4">
                                 <label for="timeTo">To:</label>
                                 <input type="time" name="timeTo" class="form-control" required>
+                                    </fieldset>
                             </div>
                             </div>
                             <div class="row mb-3">
                                 <h4>CONTRACTOR</h4>
                                 <div class="col-md-4">
-                                <label for="companyName">Company Name:</label>
+                                <label for="companyName">Company Name*</label>
                                 <input type="text" name="companyName" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                            <label for="svName">Supervisor Name:</label>
+                            <label for="svName">Supervisor Name*</label>
                                 <input type="text" name="svName" class="form-control" required>  
                             </div>
                             <div class="col-md-4">
-                            <label for="icNo">IC No./Passport No:</label>
+                            <label for="icNo">IC No./Passport No*</label>
                                 <input type="text" name="icNo" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                            <label for="contactNo">Contact No.:</label>
+                            <label for="contactNo">Contact No.*</label>
                                 <input type="tel" name="contactNo" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                            <label for="longTermContract">Term of Contract:</label>
+                            <label for="longTermContract">Term of Contract*</label>
                                 <input type="text" name="longTermContract" class="form-control" required>
                             </div>
                             </div>
                             <div class="row md-4">
                             <div class="col-md-6">
-                            <h4>Contractor Worker's Names</h4>
+                            <h4>Contractor Worker's Names*</h4>
                                 <table id="workersTable">
                                     <tr>
                                         <td>1</td>
@@ -162,7 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                                 </div>
                                 <div class="col-md-4">
                                 <h4>AREA / LOCATION OF WORK</h4>
-                                <label for="exactLocation">Exact Location of Work:</label>
+                                <label for="exactLocation">Exact Location of Work*</label>
                                 <input type="text" name="exactLocation" class="form-control" required>
                             </div>
                             </div>
@@ -170,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                         
                                 <div class="col-md-4">
                                     <h4>TYPE OF WORK</h4>
-                                    <h6>Select Type(s) of Work:</h6>
+                                    <h6>Select Type(s) of Work*</h6>
                                     <input type="checkbox" name="workType[]" value="Aircond / Chiller">
                                     <label for="aircond">Aircond / Chiller</label><br>
                                     <input type="checkbox" name="workType[]" value="Pest Control">
@@ -216,7 +218,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                                 </div>
                             <div class="col-md-4">
                             <h4>WORKSITE PREPARATION / PRECAUTIONS</h4>
-                                <h6>Select:</h6>
+                                <h6>Select*</h6>
                                 <input type="checkbox" name="worksite[]" value="Site prepared as informed">
                                 <label for="site">Site prepared as informed</label><br>
                                 <input type="checkbox" name="worksite[]" value="Scaffold Required">
@@ -258,7 +260,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
                             </div>
                             <div class="col-md-4">
                             <h4>PERSONAL PROTECTIVE EQUIPMENTS</h4>
-                                    <h6>Select PPE:</h6>
+                                    <h6>Select PPE*</h6>
                                     <input type="checkbox" name="ppe[]" value="Safety Helmet">
                                     <label for="helmet">Safety Helmet</label><br>
                                     <input type="checkbox" name="ppe[]" value="Face Shield">

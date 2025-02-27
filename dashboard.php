@@ -91,7 +91,7 @@ $pendingCount = mysqli_num_rows($resultPending);
             <div class="row">
                 <!-- Pending Card -->
                 <div class="col-md-3 mb-2">
-                    <a href="pending1.php?status=pending" class="text-white text-decoration-none">
+                    <a href="pending.php?status=pending" class="text-white text-decoration-none">
                         <div class="card status-card bg-primary text-white">
                             <div class="card-header">
                                 <h4>Pending</h4>
@@ -110,7 +110,7 @@ $pendingCount = mysqli_num_rows($resultPending);
                 </div>
                 <!-- In Progress Card -->
                 <div class="col-md-3 mb-2">
-                    <a href="inProgress1.php?status=inProgress" class="text-white text-decoration-none">
+                    <a href="inProgress.php?status=inProgress" class="text-white text-decoration-none">
                         <div class="card status-card bg-warning text-white">
                             <div class="card-header">
                                 <h4>In Progress</h4>

@@ -114,6 +114,11 @@ if (isset($_POST['update_form'])) {
         return mysqli_real_escape_string($conn, $workerName);
     }, $workersNames));
 
+    // Combine workers' names into a comma-separated string
+    $passNosString = implode(", ", array_map(function ($passNo) use ($conn) {
+        return mysqli_real_escape_string($conn, $passNo);
+    }, $passNos));
+
     // Combine work types into a comma-separated string
     $workTypesString = implode(", ", array_map(function ($workType) use ($conn) {
         return mysqli_real_escape_string($conn, $workType);
@@ -244,8 +249,6 @@ if (isset($_POST['update_form'])) {
             $query_permit = "INSERT INTO permit (id, signC, nameC, positionC, dateC, timeC, signA, nameA, positionA, dateA, timeA, signI, nameI, positionI, dateI, timeI, signS, nameS, positionS, dateS, timeS, file) VALUES 
             ('$applicantID', '$signC', '$nameC', '$positionC', '$dateC', '$timeC', '$signA', '$nameA', '$positionA', '$dateA', '$timeA', '$signI', '$nameI', '$positionI', '$dateI', '$timeI', '$signS', '$nameS', '$positionS', '$dateS', '$timeS', '$storedFilePath')";
         }
-        echo "Debug: SQL Query - " . $query_permit . "<br>";
-
         $query_run_permit = mysqli_query($conn, $query_permit);
         if (!$query_run_permit){
             throw new Exception('Signature insertion/update failed: ' . mysqli_error($conn));

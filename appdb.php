@@ -81,6 +81,9 @@ $pendingCount = mysqli_num_rows($resultPending);
 
     <div class="main-content" id="main-content">
         <div class="row">
+		<div class="user-label">
+			Logged in as: <strong><?= ucfirst($_SESSION['user_type']) ?></strong>
+		</div>
         <div class="container mt-4">
             <div class="row">
                 <!-- Pending Card -->

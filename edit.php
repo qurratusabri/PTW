@@ -31,7 +31,63 @@ if (isset($_GET['id'])) {
             $passNoArray = explode(", ", $ptw['passNo']);
         } else {
             $passNoArray = [];
-        }        
+        }
+
+			if (isset($_GET['id'])) {
+				$applicantID = mysqli_real_escape_string($conn, $_GET['id']);
+
+				// Fetch from 'form' table
+				$query = "SELECT * FROM form WHERE id='$applicantID'";
+				$query_run = mysqli_query($conn, $query);
+
+				if (mysqli_num_rows($query_run) > 0) {
+					$ptw = mysqli_fetch_array($query_run);
+
+					// Arrays for multiple checkbox values
+					$hazardsArray = !empty($ptw['hazards']) ? explode(", ", $ptw['hazards']) : [];
+					$ppeArray = !empty($ptw['ppe']) ? explode(", ", $ptw['ppe']) : [];
+					$workTypeArray = !empty($ptw['workType']) ? explode(", ", $ptw['workType']) : [];
+					$worksiteArray = !empty($ptw['worksite']) ? explode(", ", $ptw['worksite']) : [];
+					$infectionArray = !empty($ptw['infection']) ? explode(", ", $ptw['infection']) : [];
+
+					$workerNamesArray = !empty($ptw['workersName']) ? explode(", ", $ptw['workersName']) : [];
+					$passNoArray = !empty($ptw['passNo']) ? explode(", ", $ptw['passNo']) : [];
+
+					// Also fetch from 'permit' table
+					$permit_query = "SELECT * FROM permit WHERE id='$applicantID'";
+					$permit_result = mysqli_query($conn, $permit_query);
+
+					if (mysqli_num_rows($permit_result) > 0) {
+						$permit = mysqli_fetch_array($permit_result);
+
+						// Permit signature & details (Contractor, Area Owner, ICO, SHO)
+						$signC = $permit['signC'];
+						$nameC = $permit['nameC'];
+						$positionC = $permit['positionC'];
+						$dateC = $permit['dateC'];
+						$timeC = $permit['timeC'];
+
+						$signA = $permit['signA'];
+						$nameA = $permit['nameA'];
+						$positionA = $permit['positionA'];
+						$dateA = $permit['dateA'];
+						$timeA = $permit['timeA'];
+
+						$signI = $permit['signI'];
+						$nameI = $permit['nameI'];
+						$positionI = $permit['positionI'];
+						$dateI = $permit['dateI'];
+						$timeI = $permit['timeI'];
+
+						$signS = $permit['signS'];
+						$nameS = $permit['nameS'];
+						$positionS = $permit['positionS'];
+						$dateS = $permit['dateS'];
+						$timeS = $permit['timeS'];
+					}
+				}
+			}
+
     }
 }
 ?>
@@ -46,6 +102,11 @@ if (isset($_GET['id'])) {
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" type="x-icon" href="helmet.png">
+	<style>
+	input[type="file"].error {
+		border: 2px solid red;
+	}
+	</style>
     <title>Edit Form</title>
 </head>
 <body>
@@ -406,70 +467,94 @@ if (isset($_GET['id'])) {
                                         <input type="text" name="briefConducted" value="<?=$ptw['briefConducted'];?>" class="form-control">
                                 </div>
                                     </div>
-                                    <div class="row mb-3">
-                                    <h4>Permit Authorisation Section</h4>
-                                    <div class="col-md-3">
-                                    <h6><u>Contractor</u></h6>
-                                    <label for="signC">Signature:</label>
-                                    <br><canvas id="signC-pad" width="200" height="200" style="border: 1px solid #000;"></canvas></br>
-                                    <input type="hidden" name="signC" id="signC">
-                                    <button id="clear-signC">Clear Signature</button> <!-- Clear button -->
-                                    <br><label for="nameC">Name:</label></br>
-                                    <input type="text" name="nameC" class="form-control">
-                                    <label for="positionC">Position:</label>
-                                    <input type="text" name="positionC" class="form-control">
-                                    <label for="dateC">Date:</label>
-                                    <input type="date" name="dateC" class="form-control">
-                                    <label for="timeC">Time:</label>
-                                    <input type="time" name="timeC" class="form-control">
-                                    </div>
-                                    <div class="col-md-3">
-                                    <h6><u>Area Owner</u></h6>
-                                    <label for="signA">Signature:</label>
-                                    <br><canvas id="signA-pad" width="200" height="200" style="border: 1px solid #000;"></canvas></br>
-                                    <input type="hidden" name="signA" id="signA">
-                                    <button id="clear-signA">Clear Signature</button> <!-- Clear button -->
-                                    <br><label for="nameA">Name:</label></br>
-                                    <input type="text" name="nameA" class="form-control">
-                                    <label for="positionA">Position:</label>
-                                    <input type="text" name="positionA" class="form-control">
-                                    <label for="dateA">Date:</label>
-                                    <input type="date" name="dateA" class="form-control">
-                                    <label for="timeA">Time:</label>
-                                    <input type="time" name="timeA" class="form-control">
-                                    </div>
-                                    <div class="col-md-3">
-                                    <h6><u>ICO</u></h6>
-                                    <label for="signI">Signature:</label>
-                                    <br><canvas id="signI-pad" width="200" height="200" style="border: 1px solid #000;"></canvas></br>
-                                    <input type="hidden" name="signI" id="signI" >
-                                    <button id="clear-signI">Clear Signature</button> <!-- Clear button -->
-                                    <br><label for="nameI">Name:</label></br>
-                                    <input type="text" name="nameI" class="form-control">
-                                    <label for="positionI">Position:</label>
-                                    <input type="text" name="positionI" class="form-control">
-                                    <label for="dateI">Date:</label>
-                                    <input type="date" name="dateI" class="form-control">
-                                    <label for="timeI">Time:</label>
-                                    <input type="time" name="timeI" class="form-control">
-                                    </div>
-                                    <div class="col-md-3">
-                                    <h6><u>SHO</u></h6>
-                                    <label for="signS">Signature:</label>
-                                    <br><canvas id="signS-pad" width="200" height="200" style="border: 1px solid #000;"></canvas></br>
-                                    <input type="hidden" name="signS" id="signS">
-                                    <button id="clear-signS">Clear Signature</button> <!-- Clear button -->
-                                    <br><label for="nameS">Name:</label></br>
-                                    <input type="text" name="nameS" class="form-control">
-                                    <label for="positionS">Position:</label>
-                                    <input type="text" name="positionS" class="form-control">
-                                    <label for="dateS">Date:</label>
-                                    <input type="date" name="dateS" class="form-control">
-                                    <label for="timeS">Time:</label>
-                                    <input type="time" name="timeS" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
+									<div class="row mb-3">
+										<h4>Permit Authorisation Section</h4>
+
+										<!-- Contractor -->
+										<div class="col-md-3">
+											<h6><u>Contractor</u></h6>
+											<label for="signC">Signature:</label><br>
+											<?php if (!empty($permit['signC'])): ?>
+												<img src="<?= htmlspecialchars($permit['signC']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+											<?php else: ?>
+												<canvas id="signC-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+											<?php endif; ?>
+											<input type="hidden" name="signC" id="signC" value="<?= htmlspecialchars($permit['signC'] ?? '') ?>">
+											<button id="clear-signC">Clear Signature</button>
+											<br><label for="nameC">Name:</label>
+											<input type="text" name="nameC" class="form-control" value="<?= htmlspecialchars($permit['nameC'] ?? '') ?>">
+											<label for="positionC">Position:</label>
+											<input type="text" name="positionC" class="form-control" value="<?= htmlspecialchars($permit['positionC'] ?? '') ?>">
+											<label for="dateC">Date:</label>
+											<input type="date" name="dateC" class="form-control" value="<?= htmlspecialchars($permit['dateC'] ?? '') ?>">
+											<label for="timeC">Time:</label>
+											<input type="time" name="timeC" class="form-control" value="<?= htmlspecialchars($permit['timeC'] ?? '') ?>">
+										</div>
+
+										<!-- Area Owner -->
+										<div class="col-md-3">
+											<h6><u>Area Owner</u></h6>
+											<label for="signA">Signature:</label><br>
+											<?php if (!empty($permit['signA'])): ?>
+												<img src="<?= htmlspecialchars($permit['signA']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+											<?php else: ?>
+												<canvas id="signA-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+											<?php endif; ?>
+											<input type="hidden" name="signA" id="signA" value="<?= htmlspecialchars($permit['signA'] ?? '') ?>">
+											<button id="clear-signA">Clear Signature</button>
+											<br><label for="nameA">Name:</label>
+											<input type="text" name="nameA" class="form-control" value="<?= htmlspecialchars($permit['nameA'] ?? '') ?>">
+											<label for="positionA">Position:</label>
+											<input type="text" name="positionA" class="form-control" value="<?= htmlspecialchars($permit['positionA'] ?? '') ?>">
+											<label for="dateA">Date:</label>
+											<input type="date" name="dateA" class="form-control" value="<?= htmlspecialchars($permit['dateA'] ?? '') ?>">
+											<label for="timeA">Time:</label>
+											<input type="time" name="timeA" class="form-control" value="<?= htmlspecialchars($permit['timeA'] ?? '') ?>">
+										</div>
+
+										<!-- ICO -->
+										<div class="col-md-3">
+											<h6><u>ICO</u></h6>
+											<label for="signI">Signature:</label><br>
+											<?php if (!empty($permit['signI'])): ?>
+												<img src="<?= htmlspecialchars($permit['signI']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+											<?php else: ?>
+												<canvas id="signI-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+											<?php endif; ?>
+											<input type="hidden" name="signI" id="signI" value="<?= htmlspecialchars($permit['signI'] ?? '') ?>">
+											<button id="clear-signI">Clear Signature</button>
+											<br><label for="nameI">Name:</label>
+											<input type="text" name="nameI" class="form-control" value="<?= htmlspecialchars($permit['nameI'] ?? '') ?>">
+											<label for="positionI">Position:</label>
+											<input type="text" name="positionI" class="form-control" value="<?= htmlspecialchars($permit['positionI'] ?? '') ?>">
+											<label for="dateI">Date:</label>
+											<input type="date" name="dateI" class="form-control" value="<?= htmlspecialchars($permit['dateI'] ?? '') ?>">
+											<label for="timeI">Time:</label>
+											<input type="time" name="timeI" class="form-control" value="<?= htmlspecialchars($permit['timeI'] ?? '') ?>">
+										</div>
+
+										<!-- SHO -->
+										<div class="col-md-3">
+											<h6><u>SHO</u></h6>
+											<label for="signS">Signature:</label><br>
+											<?php if (!empty($permit['signS'])): ?>
+												<img src="<?= htmlspecialchars($permit['signS']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+											<?php else: ?>
+												<canvas id="signS-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+											<?php endif; ?>
+											<input type="hidden" name="signS" id="signS" value="<?= htmlspecialchars($permit['signS'] ?? '') ?>">
+											<button id="clear-signS">Clear Signature</button>
+											<br><label for="nameS">Name:</label>
+											<input type="text" name="nameS" class="form-control" value="<?= htmlspecialchars($permit['nameS'] ?? '') ?>">
+											<label for="positionS">Position:</label>
+											<input type="text" name="positionS" class="form-control" value="<?= htmlspecialchars($permit['positionS'] ?? '') ?>">
+											<label for="dateS">Date:</label>
+											<input type="date" name="dateS" class="form-control" value="<?= htmlspecialchars($permit['dateS'] ?? '') ?>">
+											<label for="timeS">Time:</label>
+											<input type="time" name="timeS" class="form-control" value="<?= htmlspecialchars($permit['timeS'] ?? '') ?>">
+										</div>
+									</div>
+																	<div class="row mb-3">
                                 <div class="col-md-4">
                                 <h4>Status</h4>
                                 <input type="text" name="status" value="<?=$ptw['status'];?>" class="form-control" disabled>
@@ -492,7 +577,16 @@ if (isset($_GET['id'])) {
                                 <div class="col-md-4">
                                 <h4 for="file">Upload Files</h4>
                                 <input type="file" name="files[]" id="file" multiple >
-                            </div>
+								<small id="file-error" class="text-danger d-block mt-1"></small>
+								</div>
+								<?php
+									if (!empty($existing_permit['file'])) {
+										$files = explode(",", $existing_permit['file']);
+										foreach ($files as $file) {
+											echo '<a href="' . htmlspecialchars($file) . '" target="_blank">View Uploaded File</a><br>';
+										}
+									}
+									?>
                             </div>
                             <script>
                             function checkStatus() {
@@ -530,6 +624,28 @@ if (isset($_GET['id'])) {
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="script.js"></script>
         <script>
+		document.getElementById('file').addEventListener('change', function () {
+			const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+			const files = this.files;
+			const errorContainer = document.getElementById('file-error');
+			let errorMessage = '';
+
+			for (let i = 0; i < files.length; i++) {
+				if (files[i].size > maxFileSize) {
+					errorMessage = `File "${files[i].name}" exceeds 10MB limit.`;
+					break;
+				}
+			}
+
+			if (errorMessage !== '') {
+				errorContainer.textContent = errorMessage;
+				this.classList.add('error');
+				this.value = ''; // Clear selected files
+			} else {
+				errorContainer.textContent = ''; // Clear error message
+				this.classList.remove('error');
+			}
+		});
             function confirmLogout() {
             var confirmation = confirm("Are you sure you want to logout?");
             return confirmation;

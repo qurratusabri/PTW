@@ -26,6 +26,13 @@ $cancelCount = mysqli_num_rows($resultCancel);
 $queryPending = "SELECT * FROM form WHERE status = 'pending'";
 $resultPending = mysqli_query($conn, $queryPending);
 $pendingCount = mysqli_num_rows($resultPending);
+
+// Query for "Overdue" projects (today > durationTo AND still active)
+$queryOverdue = "SELECT * FROM form 
+                 WHERE durationTo < CURDATE() 
+                 AND status NOT IN ('completed', 'cancel', 'stop work')";
+$resultOverdue = mysqli_query($conn, $queryOverdue);
+$overdueCount = mysqli_num_rows($resultOverdue);
 ?>
 <!doctype html>
 <html lang="en">
@@ -87,6 +94,9 @@ $pendingCount = mysqli_num_rows($resultPending);
 
     <div class="main-content" id="main-content">
     <div class="row">
+		<div class="user-label">
+			Logged in as: <strong><?= ucfirst($_SESSION['user_type']) ?></strong>
+		</div>
         <div class="container mt-4">
             <div class="row">
                 <!-- Pending Card -->
@@ -187,6 +197,26 @@ $pendingCount = mysqli_num_rows($resultPending);
                         </div>
                     </a>
                 </div>
+				<!-- Overdue Card -->
+				<div class="col-md-3 mb-2">
+					<a href="overdue.php?status=overdue" class="text-white text-decoration-none">
+						<div class="card status-card bg-dark text-white">
+							<div class="card-header">
+								<h4>Overdue</h4>
+							</div>
+							<div class="card-body">
+								<h1><?= $overdueCount; ?></h1>
+								<p>Projects past their permit end date</p>
+								<hr>
+								<ul>
+									<?php while ($row = mysqli_fetch_assoc($resultOverdue)) : ?>
+										<!-- Example: <li><?= $row['name']; ?></li> -->
+									<?php endwhile; ?>
+								</ul>
+							</div>
+						</div>
+					</a>
+				</div>
             </div>
         </div>
         </div>

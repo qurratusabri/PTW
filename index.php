@@ -1,6 +1,10 @@
 <?php
 include("dbconn.php");
 session_start(); // Start session to store user type
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 
 $newProjectsCount = 0;
 $inProgressProjectsCount = 0;
@@ -25,12 +29,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row = $result_applicant->fetch_assoc();
         $_SESSION['user_type'] = 'applicant'; // Set user type as applicant
         $_SESSION['user_id'] = $row['applicantID']; // Set user id from applicant table
+		$_SESSION['isAdmin'] = false;
+		$_SESSION['isUser'] = true;
+		$_SESSION['user_type'] = 'applicant';
         header("Location: appdb.php");
         exit;
     } elseif ($result_admin->num_rows > 0) {
         $row = $result_admin->fetch_assoc();
         $_SESSION['user_type'] = 'admin'; // Set user type as admin
         $_SESSION['user_id'] = $row['adminID']; // Set user id from admin table
+		$_SESSION['isAdmin'] = true;
+		$_SESSION['isUser'] = false;
+		$_SESSION['user_type'] = 'admin';
         header("Location: dashboard.php");
         exit;
     } else {

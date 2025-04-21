@@ -47,7 +47,8 @@ if (isset($_POST['update_form'])) {
     $applicantID = mysqli_real_escape_string($conn, $_POST['applicantID']);
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $services = mysqli_real_escape_string($conn, $_POST['services']);
-    $status = mysqli_real_escape_string($conn, $_POST['status']);
+	$status = isset($_POST['status']) ? mysqli_real_escape_string($conn, $_POST['status']) : 'pending';
+    //$status = mysqli_real_escape_string($conn, $_POST['status']);
     $remark = mysqli_real_escape_string($conn, $_POST['remark']); 
     $durationFrom = mysqli_real_escape_string($conn, $_POST['durationFrom']);
     $durationTo = mysqli_real_escape_string($conn, $_POST['durationTo']);
@@ -138,8 +139,9 @@ if (isset($_POST['update_form'])) {
         }
     }
 
-    if (!empty($_FILES['files']['name'][0])) {
+    /***if (!empty($_FILES['files']['name'][0])) {
         $filePaths = []; 
+		$maxFileSize = 10 * 1024 * 1024;
     
         foreach ($_FILES['files']['name'] as $key => $fileName) {
             $fileTmp = $_FILES['files']['tmp_name'][$key];
@@ -151,18 +153,25 @@ if (isset($_POST['update_form'])) {
                 die("Error: Invalid file type ($fileExt). Only PDF, JPG, JPEG, PNG allowed.");
             }
     
-            if ($fileSize > 5000000) {
+            if ($fileSize > $maxFileSize) {
                 die("Error: File too large. Max size is 5MB.");
             }
     
             $uploadDir = "uploads/";
             $uniqueFileName = time() . "_" . $fileName;
             $filePath = $uploadDir . $uniqueFileName;
+			
+			if (!is_dir('uploads')) {
+				mkdir('uploads', 0777, true);
+			}
     
             if (move_uploaded_file($fileTmp, $filePath)) {
                 $filePaths[] = $filePath; 
             } else {
-                die("Error: File upload failed for $fileName.");
+				$_SESSION['message'] = "One or more files failed to upload. Please check file size and type.";
+				header("Location: form.php");
+				exit();
+                //die("Error: File upload failed for $fileName.");
             }
         }
     
@@ -176,7 +185,55 @@ if (isset($_POST['update_form'])) {
     } else {
         // Keep old files if no new upload
         $storedFilePath = $existing_permit['file'];
-    }
+    }***/
+	
+	if (!empty($_FILES['files']['name'][0])) {
+		$filePaths = [];
+
+		// Ensure uploads directory exists
+		$uploadDir = "uploads/";
+		if (!is_dir($uploadDir)) {
+			mkdir($uploadDir, 0777, true);
+		}
+
+		foreach ($_FILES['files']['name'] as $key => $fileName) {
+			$fileTmp = $_FILES['files']['tmp_name'][$key];
+			$fileSize = $_FILES['files']['size'][$key];
+			$fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+			$allowedExts = ['pdf', 'jpg', 'jpeg', 'png'];
+			if (!in_array($fileExt, $allowedExts)) {
+				echo "<script>alert('Invalid file type ($fileExt). Only PDF, JPG, JPEG, PNG allowed.'); window.history.back();</script>";
+				exit();
+			}
+
+			if ($fileSize > 10485760) { // 10MB = 10 * 1024 * 1024
+				echo "<script>alert('File too large. Max size is 10MB.'); window.history.back();</script>";
+				exit();
+			}
+
+			$uniqueFileName = time() . "_" . $fileName;
+			$filePath = $uploadDir . $uniqueFileName;
+
+			if (move_uploaded_file($fileTmp, $filePath)) {
+				$filePaths[] = $filePath;
+			} else {
+				echo "<script>alert('File upload failed for $fileName.'); window.history.back();</script>";
+				exit();
+			}
+		}
+
+		// Merge with existing files if editing
+		$sql_fetch_existing = "SELECT file FROM permit WHERE id='$applicantID'";
+		$result = mysqli_query($conn, $sql_fetch_existing);
+		$row = mysqli_fetch_assoc($result);
+		$existingFiles = !empty($row['file']) ? explode(",", $row['file']) : [];
+
+		$allFiles = array_merge($existingFiles, $filePaths);
+		$storedFilePath = implode(",", $allFiles);
+	} else {
+		$storedFilePath = isset($existing_permit['file']) ? $existing_permit['file'] : '';
+	}
 
     // Start transaction 
     mysqli_begin_transaction($conn);
@@ -259,7 +316,7 @@ if (isset($_POST['update_form'])) {
         // Commit transaction
         mysqli_commit($conn);
         $_SESSION['message'] = "Project Updated Successfully";
-        header("Location: edit.php");
+        header("Location: edit.php?id=".$applicantID);
         exit(0);
     } catch (Exception $e) {
         // Rollback transaction on error
@@ -348,10 +405,10 @@ if(isset($_POST['save_form'])) {
     
     // Check user type and redirect accordingly
     if (isset($_SESSION['user_type']) && $_SESSION['user_type'] == 'admin') {
-        header("Location: form.php"); 
-    } else {
-        header("Location: form1.php");
-    }
+		header("Location: dashboard.php"); 
+	} else {
+		header("Location: appdb.php");
+	}
     exit(0);
     
 }

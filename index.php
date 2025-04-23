@@ -31,7 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $row['applicantID']; // Set user id from applicant table
 		$_SESSION['isAdmin'] = false;
 		$_SESSION['isUser'] = true;
-		$_SESSION['user_type'] = 'applicant';
+		$_SESSION['username'] = $username;
+		
         header("Location: appdb.php");
         exit;
     } elseif ($result_admin->num_rows > 0) {
@@ -40,7 +41,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['user_id'] = $row['adminID']; // Set user id from admin table
 		$_SESSION['isAdmin'] = true;
 		$_SESSION['isUser'] = false;
-		$_SESSION['user_type'] = 'admin';
+		$_SESSION['username'] = $username;
+		
         header("Location: dashboard.php");
         exit;
     } else {

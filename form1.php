@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService']))
     }
  } 
  // Fetch services 
- $services = $conn->query("SELECT serviceName FROM services");
+ $services = $conn->query("SELECT serviceName FROM services order by serviceName asc");
 ?>
 
 <!doctype html>

@@ -135,6 +135,7 @@ if(isset($_POST['delete_form'])) {
 
 
 if (isset($_POST['update_form'])) {
+	try {
     $applicantID = mysqli_real_escape_string($conn, $_POST['applicantID']);
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $services = mysqli_real_escape_string($conn, $_POST['services']);
@@ -217,6 +218,7 @@ if (isset($_POST['update_form'])) {
     }, $workTypes));
 
     // Check if a status radio button was selected
+	/*$status = isset($_POST['status']) ? mysqli_real_escape_string($conn, $_POST['status']) : 'pending';
     if (isset($_POST['status'])) {
         $status = $_POST['status']; // Get the selected status value
     } else {
@@ -228,57 +230,26 @@ if (isset($_POST['update_form'])) {
         } else {
             $status = 'pending';
         }
-    }
+    }*/
+	$status = isset($_POST['status']) ? mysqli_real_escape_string($conn, $_POST['status']) : 'pending';
 
-    /***if (!empty($_FILES['files']['name'][0])) {
-        $filePaths = []; 
-		$maxFileSize = 10 * 1024 * 1024;
-    
-        foreach ($_FILES['files']['name'] as $key => $fileName) {
-            $fileTmp = $_FILES['files']['tmp_name'][$key];
-            $fileSize = $_FILES['files']['size'][$key];
-            $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-    
-            $allowedExts = ['pdf', 'jpg', 'jpeg', 'png'];
-            if (!in_array($fileExt, $allowedExts)) {
-                die("Error: Invalid file type ($fileExt). Only PDF, JPG, JPEG, PNG allowed.");
-            }
-    
-            if ($fileSize > $maxFileSize) {
-                die("Error: File too large. Max size is 5MB.");
-            }
-    
-            $uploadDir = "uploads/";
-            $uniqueFileName = time() . "_" . $fileName;
-            $filePath = $uploadDir . $uniqueFileName;
-			
-			if (!is_dir('uploads')) {
-				mkdir('uploads', 0777, true);
-			}
-    
-            if (move_uploaded_file($fileTmp, $filePath)) {
-                $filePaths[] = $filePath; 
-            } else {
-				$_SESSION['message'] = "One or more files failed to upload. Please check file size and type.";
-				header("Location: form.php");
-				exit();
-                //die("Error: File upload failed for $fileName.");
-            }
-        }
-    
-        $sql_fetch_existing = "SELECT file FROM permit WHERE id='$applicantID'";
-        $result = mysqli_query($conn, $sql_fetch_existing);
-        $row = mysqli_fetch_assoc($result);
-        $existingFiles = !empty($row['file']) ? explode(",", $row['file']) : [];
-    
-        $allFiles = array_merge($existingFiles, $filePaths);
-        $storedFilePath = implode(",", $allFiles);
-    } else {
-        // Keep old files if no new upload
-        $storedFilePath = $existing_permit['file'];
-    }***/
+	// Normalize 'resume work' to 'in progress'
+	if ($status === 'resume work') {
+		$status = 'in progress';
+	} elseif (empty($status)) {
+		// Determine the status based on briefing fields (fallback)
+		if (!empty($briefDate) && !empty($briefTime) && !empty($briefConducted)) {
+			$status = 'in progress';
+		} else {
+			$status = 'pending';
+		}
+	}
 	
-	if (!empty($_FILES['files']['name'][0])) {
+	if (!in_array($status, ['completed', 'stop work', 'cancel', 'resume work', 'in progress', 'pending'])) {
+            throw new Exception("Invalid status selected.");
+    }
+	
+	/*if (!empty($_FILES['files']['name'][0])) {
 		$filePaths = [];
 
 		// Ensure uploads directory exists
@@ -324,11 +295,11 @@ if (isset($_POST['update_form'])) {
 		$storedFilePath = implode(",", $allFiles);
 	} else {
 		$storedFilePath = isset($existing_permit['file']) ? $existing_permit['file'] : '';
-	}
+	}*/
 
     // Start transaction 
     mysqli_begin_transaction($conn);
-    try {
+    
         // SQL Update query for form
         $query_form = "UPDATE form SET 
             name='$name', 
@@ -390,8 +361,7 @@ if (isset($_POST['update_form'])) {
                 nameS='" . (!empty($nameS) ? $nameS : $existing_permit['nameS']) . "', 
                 positionS='" . (!empty($positionS) ? $positionS : $existing_permit['positionS']) . "', 
                 dateS='" . (!empty($dateS) ? $dateS : $existing_permit['dateS']) . "', 
-                timeS='" . (!empty($timeS) ? $timeS : $existing_permit['timeS']) . "',
-                file = '" . mysqli_real_escape_string($conn, $storedFilePath) . "'
+                timeS='" . (!empty($timeS) ? $timeS : $existing_permit['timeS']) . "'
             WHERE id='$applicantID'";
 
         } else {
@@ -412,7 +382,7 @@ if (isset($_POST['update_form'])) {
     } catch (Exception $e) {
         // Rollback transaction on error
         mysqli_rollback($conn);
-        echo 'Error: ' . $e->getMessage();
+        echo "<script>alert('Error: " . addslashes($e->getMessage()) . "'); window.history.back();</script>";
     }
 }
 

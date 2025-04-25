@@ -1,6 +1,19 @@
 <?php
 	session_start();
 	require 'dbconn.php';
+	
+	// If the user is not logged in, redirect to login page
+	if (!isset($_SESSION['user_type'])) {
+		header("Location: index.php");
+		exit;
+	}
+	
+	// Optional: Restrict page access based on user_type
+	if ($_SESSION['user_type'] !== 'admin') {
+		echo "<script>alert('Access denied: Admins only'); window.location.href='appdb.php';</script>";
+		exit;
+	}
+	
 	// Assuming you're fetching the form record from the database based on applicant ID
 	if (isset($_GET['id'])) {
 		$applicantID = mysqli_real_escape_string($conn, $_GET['id']);
@@ -356,8 +369,9 @@
 													<label for="cm">Corrective Maintenance</label><br>
 													<input type="checkbox" name="workType[]" value="Equipment breakdown" <?php echo in_array('Equipment breakdown', $workTypeArray) ? 'checked' : ''; ?>>
 													<label for="eb">Equipment breakdown</label><br>
-													<label for="others">Others:</label><br>
-													<input type="textbox" name="workType[]" class="form-control" <?php echo in_array('others', $workTypeArray) ? 'checked' : ''; ?>>
+													<input type="checkbox" id="workType_other_checkbox" value="others">
+													<label for="workType_other_checkbox">Others:</label><br>
+													<textarea id="workType_other_text" name="workType[]" class="form-control" style="display: none;" placeholder="Specify other work type"></textarea>
 												</div>
 												<div class="col-md-4">
 													<h4>WORKSITE PREPARATION / PRECAUTIONS</h4>
@@ -398,9 +412,9 @@
 													<label for="inform">Inform Workers In and the Next Area</label><br>
 													<input type="checkbox" name="worksite[]" value="Hot work" <?php echo in_array('Hot work', $worksiteArray) ? 'checked' : ''; ?>>
 													<label for="hot">Hot work</label><br>
-													<label for="others">If Others please state:</label><br>
-													<input type="textbox" name="worksite[]" class="form-control" <?php echo in_array('others', $worksiteArray) ? 'checked' : ''; ?>>
-													<!-- Add more options similarly -->
+													<input type="checkbox" id="worksite_other_checkbox" value="others">
+													<label for="worksite_other_checkbox">If Others please state:</label><br>
+													<textarea id="worksite_other_text" name="worksite[]" class="form-control" style="display: none;" placeholder="Specify other worksite preparation"></textarea>
 												</div>                                    
 												<div class="col-md-4">
 													<h4>PERSONAL PROTECTIVE EQUIPMENTS</h4>
@@ -451,7 +465,9 @@
 													<label for="others">Others:</label><br>
 													<input type="checkbox" name="hazards[]" value="Working > 24 hours" <?php echo in_array('Working > 24 hours', $hazardsArray) ? 'checked' : ''; ?>>
 													<label for="others">Working > 24 hours</label><br>
-													<!-- Add more options similarly -->
+													<input type="checkbox" id="hazards_other_checkbox" value="others">
+													<label for="hazards_other_checkbox">Others:</label><br>
+													<textarea id="hazards_other_text" name="hazards[]" class="form-control" style="display: none;" placeholder="Specify other hazard"></textarea>
 												</div>
 												<div class="col-md-4">
 													<h4>INFECTION CONTROL</h4>
@@ -479,9 +495,9 @@
 													<label for="segregation">Waste segregation required</label><br>
 													<input type="checkbox" name="infection[]" value="Provide covered waste Bin" <?php echo in_array('Provide covered waste Bin', $infectionArray) ? 'checked' : ''; ?>>
 													<label for="provide">Provide covered waste Bin</label><br>
-													<label for="others">Others:</label><br>
-													<input type="textbox" name="infection[]" class="form-control" <?php echo in_array('others', $infectionArray) ? 'checked' : ''; ?>>
-													<!-- Add more options similarly -->
+													<input type="checkbox" id="infection_other_checkbox" value="others">
+													<label for="infection_other_checkbox">Others:</label><br>
+													<textarea id="infection_other_text" name="infection[]" class="form-control" style="display: none;" placeholder="Specify other infection"></textarea>
 												</div>
 											</div>
 											<div class="row mb-3">
@@ -613,247 +629,232 @@
 												</div>
 											</div>
 											<div class="row mb-3">
-												<h4 for="file">Upload Files</h4>
-												<div id="drop-area">
-													<p>Drag & Drop files here or click to select</p>
-													<input type="file" id="fileElem" multiple style="display:none">
-													<button type="button" onclick="document.getElementById('fileElem').click()">Browse Files</button>
-												</div>
-												
-												<div id="preview-list" class="mb-3"></div>
-												<button type="button" class="btn btn-success" id="uploadBtn">Upload Files</button>
-												
-												<h5>Uploaded Files</h5>
-												<div id="file-list"></div>
-												
-												<?php if (!empty($permit['file'])): ?>
-												<h5>Existing Uploaded Files</h5>
-												<div id="existing-file-list">
-													<?php 
-														$files = explode(",", $permit['file']);
-														foreach ($files as $index => $file):
-														$file = trim($file);
-														$fileName = basename($file);
-														$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-														$iconMap = [
-														'pdf' => 'fa-file-pdf',
-														'png' => 'fa-file-image',	
-														'jpg' => 'fa-file-image',
-														'jpeg' => 'fa-file-image'
-														];
-														echo $ext;
-														$iconClass = isset($iconMap[$ext]) ? $iconMap[$ext] : 'fa-file';
-													?>
-													<div class="file-item" id="file-row-<?= $index ?>">
-														<i class="fas <?= $iconClass ?> file-icon"></i>
-														<a href="<?= htmlspecialchars($file) ?>" target="_blank" class="file-name">
-															<?= htmlspecialchars($fileName) ?>
-														</a>
-														<span class="delete-btn" onclick="deleteExistingFile(<?= $index ?>, '<?= addslashes($file) ?>')">
-															<i class="fas fa-trash-alt"></i>
-														</span>
+												<div class="row mb-3" id="file-upload-wrapper">
+													<!-- Upload Section -->
+													<div class="row mb-3" id="file-upload-wrapper">
+														<h4>Upload Files</h4>
+														
+														<!-- File Input -->
+														<div class="col-md-6 mb-2 file-upload-group">
+															<input type="file" name="files[]" class="form-control file-input" accept=".pdf,.jpg,.png,.jpeg">
+														</div>
+														
+														<!-- Add More Button -->
+														<div class="col-md-6">
+															<button type="button" id="add-more-files" class="btn btn-secondary">
+																+ Add Another File
+															</button>
+														</div>
+														
+														<!-- Selected File Preview -->
+														<div class="col-md-12 mt-3">
+															<h5>Selected Files</h5>
+															<ul id="selected-files-list" class="list-group"></ul>
+														</div>
 													</div>
-													<?php endforeach; ?>
+													
+													
+													
+													<?php if (!empty($permit['file'])): ?>
+													<h5>Existing Uploaded Files</h5>
+													<div id="existing-file-list">
+														<?php 
+															$files = explode(",", $permit['file']);
+															foreach ($files as $index => $file):
+															$file = trim($file);
+															$fileName = basename($file);
+															$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+															$iconMap = [
+															'pdf' => 'fa-file-pdf',
+															'png' => 'fa-file-image',	
+															'jpg' => 'fa-file-image',
+															'jpeg' => 'fa-file-image'
+															];
+															$iconClass = isset($iconMap[$ext]) ? $iconMap[$ext] : 'fa-file';
+														?>
+														<div class="file-item" id="file-row-<?= $index ?>">
+															<i class="fas <?= $iconClass ?> file-icon"></i>
+															<a href="<?= htmlspecialchars($file) ?>" target="_blank" class="file-name">
+																<?= htmlspecialchars($fileName) ?>
+															</a>
+															<span class="delete-btn" onclick="deleteExistingFile(<?= $index ?>, '<?= addslashes($file) ?>')">
+																<i class="fas fa-trash-alt"></i>
+															</span>
+														</div>
+														<?php endforeach; ?>
+													</div>
+													<?php else: ?>
+													<p>No files uploaded.</p>
+													<?php endif; ?>											
 												</div>
-												<?php else: ?>
-												<p>No files uploaded.</p>
-												<?php endif; ?>											
-											</div>
-											<div class="col-md-4">
-												<button type="submit" name="update_form" class="btn btn-primary">
-													Update Form
-												</button>
-											</div>
-										</form>
-										<?php
+												<div class="col-md-4">
+													<button type="submit" name="update_form" class="btn btn-primary">
+														Update Form
+													</button>
+												</div>
+											</form>
+											<?php
+											}
+											else
+											{
+												echo "<h4>No Record Found</h4>";
+											}
 										}
-										else
-										{
-											echo "<h4>No Record Found</h4>";
-										}
-									}
-								?>
+									?>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="script.js"></script>
-	<script>
-		document.getElementById('file').addEventListener('change', function () {
-			const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
-			const files = this.files;
-			const errorContainer = document.getElementById('file-error');
-			let errorMessage = '';
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="script.js"></script>
+		<script>
+			document.getElementById('file').addEventListener('change', function () {
+				const maxFileSize = 10 * 1024 * 1024; // 10MB in bytes
+				const files = this.files;
+				const errorContainer = document.getElementById('file-error');
+				let errorMessage = '';
+				
+				for (let i = 0; i < files.length; i++) {
+					if (files[i].size > maxFileSize) {
+						errorMessage = `File "${files[i].name}" exceeds 10MB limit.`;
+						break;
+					}
+				}
+				
+				if (errorMessage !== '') {
+					errorContainer.textContent = errorMessage;
+					this.classList.add('error');
+					this.value = ''; // Clear selected files
+					} else {
+					errorContainer.textContent = ''; // Clear error message
+					this.classList.remove('error');
+				}
+			});
 			
-			for (let i = 0; i < files.length; i++) {
-				if (files[i].size > maxFileSize) {
-					errorMessage = `File "${files[i].name}" exceeds 10MB limit.`;
-					break;
+			function checkStatus() {
+				const status = document.querySelector('input[name="status"]:checked').value;
+				const remarkField = document.getElementById('remark');
+				if (['cancel', 'stop work', 'resume work'].includes(status)) {
+					remarkField.required = true;
+					} else {
+					remarkField.required = false;
 				}
 			}
-			
-			if (errorMessage !== '') {
-				errorContainer.textContent = errorMessage;
-				this.classList.add('error');
-				this.value = ''; // Clear selected files
-				} else {
-				errorContainer.textContent = ''; // Clear error message
-				this.classList.remove('error');
+			function confirmLogout() {
+				var confirmation = confirm("Are you sure you want to logout?");
+				return confirmation;
 			}
-		});
-		
-		function checkStatus() {
-			const status = document.querySelector('input[name="status"]:checked').value;
-			const remarkField = document.getElementById('remark');
-			if (['cancel', 'stop work', 'resume work'].includes(status)) {
-				remarkField.required = true;
-				} else {
-				remarkField.required = false;
-			}
-		}
-		function confirmLogout() {
-            var confirmation = confirm("Are you sure you want to logout?");
-            return confirmation;
-		}
-		
-		document.addEventListener("DOMContentLoaded", function () {
-			document.querySelectorAll(".delete-file").forEach(button => {
-				button.addEventListener("click", function () {
-					const file = this.getAttribute("data-file");
-					const row = this.closest("tr");
-					
-					if (confirm("Are you sure you want to delete this file?")) {
-						fetch("delete_file.php", {
-							method: "POST",
-							headers: { "Content-Type": "application/x-www-form-urlencoded" },
-							body: `file=${encodeURIComponent(file)}&form_id=<?= $ptw['id'] ?>`
-						})
-						.then(res => res.json())
-						.then(data => {
-							if (data.success) {
-								row.remove();
-								} else {
-								alert("Failed to delete the file.");
-							}
+		</script>
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				function toggleInput(checkboxId, inputId) {
+					const checkbox = document.getElementById(checkboxId);
+					const input = document.getElementById(inputId);
+					if (checkbox && input) {
+						// Initial toggle on page load
+						input.style.display = checkbox.checked ? "block" : "none";
+						
+						// Toggle on change
+						checkbox.addEventListener("change", function () {
+							input.style.display = checkbox.checked ? "block" : "none";
+							if (!checkbox.checked) input.value = "";
 						});
 					}
-				});
-			});
-		});
-	</script>
-	<script>
-		let queuedFiles = [];
-		
-		const fileElem = document.getElementById('fileElem');
-		const previewList = document.getElementById('preview-list');
-		const fileList = document.getElementById('file-list');
-		const uploadBtn = document.getElementById('uploadBtn');
-		
-		// File extension to FontAwesome icon map
-		const iconMap = {
-			pdf: 'fa-file-pdf',
-			doc: 'fa-file-word',
-			docx: 'fa-file-word',
-			xls: 'fa-file-excel',
-			xlsx: 'fa-file-excel',
-			png: 'fa-file-image',
-			jpg: 'fa-file-image',
-			jpeg: 'fa-file-image',
-			txt: 'fa-file-lines',
-			zip: 'fa-file-zipper'
-		};
-		
-		// Preview queue files
-		fileElem.addEventListener('change', () => {
-			for (let file of fileElem.files) {
-				queuedFiles.push(file);
-				const ext = file.name.split('.').pop().toLowerCase();
-				const icon = iconMap[ext] || 'fa-file';
+				}
 				
-				const item = document.createElement('div');
-				item.className = 'file-item';
-				item.innerHTML = `
-			<i class="fas ${icon} file-icon"></i>
-            <span class="file-name">${file.name}</span>
-            <span class="delete-btn" onclick="removeFromQueue('${file.name}', this)">
-                <i class="fas fa-trash-alt"></i>
-			</span>
-			`;
-			previewList.appendChild(item);
-			}
-			
-			// Clear input so same file can be added again
-			fileElem.value = '';
+				toggleInput("infection_other_checkbox", "infection_other_text");
+				toggleInput("workType_other_checkbox", "workType_other_text");
+				toggleInput("worksite_other_checkbox", "worksite_other_text");
+				toggleInput("hazards_other_checkbox", "hazards_other_text");
 			});
-			
-			// Remove from queue
-			function removeFromQueue(fileName, el) {
-			queuedFiles = queuedFiles.filter(file => file.name !== fileName);
-			el.parentElement.remove();
-			}
-			
-			// Upload files via AJAX
-			uploadBtn.addEventListener('click', () => {
-			if (queuedFiles.length === 0) {
-			alert("No files to upload.");
-			return;
-			}
-			
-			queuedFiles.forEach(file => {
-			const formData = new FormData();
-			formData.append('file', file);
-			formData.append('form_id', '<?= $ptw['id'] ?>');
-			
-			fetch('upload.php', {
-            method: 'POST',
-            body: formData
-			})
-			.then(res => res.text())
-			.then(filePath => {
-            // Show in uploaded file list
-            const ext = file.name.split('.').pop().toLowerCase();
-            const icon = iconMap[ext] || 'fa-file';
-			
-            const uploaded = document.createElement('div');
-            uploaded.className = 'file-item';
-            uploaded.innerHTML = `
-			<i class="fas ${icon} file-icon"></i>
-			<a href="${filePath}" target="_blank" class="file-name">${file.name}</a>
-			<span class="delete-btn" onclick="deleteFile(this, '${filePath}')">
-				<i class="fas fa-trash-alt"></i>
-			</span>
-            `;
-            fileList.appendChild(uploaded);
-			})
-			.catch(() => alert("Failed to upload " + file.name));
-			});
-			
-			// Clear queue and preview
-			previewList.innerHTML = '';
-			queuedFiles = [];
-			});
-			
-			// Delete from uploaded list
-			function deleteFile(el, filePath) {
-				if (confirm("Delete this file?")) {
-					$.post('delete_file.php', {
-						file: filePath,
-						form_id: '<?= $ptw['id'] ?>'
-					}, function(response) {
-						const res = JSON.parse(response);
-						if (res.success) {
-							el.parentElement.remove();
-						} else {
-							alert(res.message || 'Delete failed.');
-						}
-					}).fail(() => alert('Delete request failed.'));
+		</script>
+		<script>
+			function deleteExistingFile(index, filePath) {
+				const fileRow = document.getElementById('file-row-' + index);
+				if (fileRow) {
+					fileRow.remove();
+					
+					// Append to hidden deleted_files[] list
+					const deletedInput = document.createElement("input");
+					deletedInput.type = "hidden";
+					deletedInput.name = "deleted_files[]";
+					deletedInput.value = filePath;
+					document.querySelector('form').appendChild(deletedInput);
 				}
 			}
 		</script>
-		
+		<script>
+			document.addEventListener("DOMContentLoaded", function () {
+				const wrapper = document.getElementById('file-upload-wrapper');
+				const fileListDisplay = document.getElementById('selected-files-list');
+				const addMoreBtn = document.getElementById('add-more-files');
+				
+				const iconMap = {
+					pdf: 'fa-file-pdf',
+					jpg: 'fa-file-image',
+					jpeg: 'fa-file-image',
+					png: 'fa-file-image'
+				};
+				
+				// Add file preview on input change
+				wrapper.addEventListener('change', function (e) {
+					if (e.target.classList.contains('file-input')) {
+						const file = e.target.files[0];
+						if (file) {
+							const ext = file.name.split('.').pop().toLowerCase();
+							const icon = iconMap[ext] || 'fa-file';
+							
+							// Add preview
+							const li = document.createElement('li');
+							li.className = "list-group-item d-flex justify-content-between align-items-center mt-1";
+							li.innerHTML = `
+							<div class="d-flex align-items-center">
+						<i class="fas ${icon} fa-lg me-2"></i>
+						<span>${file.name}</span>
+						<span class="badge bg-secondary ms-2">${Math.round(file.size / 1024)} KB</span>
+					</div>
+					<button type="button" class="btn btn-sm btn-danger remove-file-btn">
+						<i class="fas fa-trash-alt"></i>
+					</button>
+					`;
+					
+					fileListDisplay.appendChild(li);
+					fileListDisplay.parentElement.style.display = 'block';
+					}
+					}
+					});
+					
+					// Add more file inputs
+					addMoreBtn.addEventListener('click', function () {
+					const newInputGroup = document.createElement('div');
+					newInputGroup.className = 'col-md-6 mb-2 file-upload-group';
+					newInputGroup.innerHTML = `
+					<input type="file" name="files[]" class="form-control file-input" accept=".pdf,.jpg,.jpeg,.png">
+					`;
+					wrapper.insertBefore(newInputGroup, addMoreBtn.closest('.col-md-6'));
+					});
+					
+					// Just remove preview (not input)
+					fileListDisplay.addEventListener('click', function (e) {
+					const removeBtn = e.target.closest('.remove-file-btn');
+					if (removeBtn) {
+					const li = removeBtn.closest('li');
+					if (li) li.remove();
+					
+					if (!fileListDisplay.hasChildNodes()) {
+					fileListDisplay.parentElement.style.display = 'none';
+					}
+					}
+					});
+					
+					// Initial hide if empty
+					if (!fileListDisplay.hasChildNodes()) {
+					fileListDisplay.parentElement.style.display = 'none';
+					}
+					});
+		</script>	
 	</body>
-</html>
+</html>												

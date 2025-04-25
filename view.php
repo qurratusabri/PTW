@@ -1,5 +1,17 @@
 <?php
+	session_start();
 	require 'dbconn.php';
+	// If the user is not logged in, redirect to login page
+	if (!isset($_SESSION['user_type'])) {
+		header("Location: index.php");
+		exit;
+	}
+	
+	// Optional: Restrict page access based on user_type
+	if ($_SESSION['user_type'] !== 'admin') {
+		echo "<script>alert('Access denied: Admins only'); window.location.href='appdb.php';</script>";
+		exit;
+	}
 	
 	if (isset($_GET['id'])) {
 		$applicantID = (int)$_GET['id'];
@@ -303,12 +315,12 @@
                                     <div class="col-md-3">
                                         <h6><u>Contractor</u></h6>
                                         <label>Signature :</label>
-                                        <div class="card-body">
+                                        <div style="height: 200px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; background-color: #f9f9f9;">
 											<?php if (!empty($permit['signC'])): ?>
-                                            <img src="<?= strpos($permit['signC'], 'data:image/png;base64,') === 0 ? $permit['signC'] : 'data:image/png;base64,' . $permit['signC']; ?>" alt="signC" class="img-fluid">
+											<img src="<?= strpos($permit['signC'], 'data:image/png;base64,') === 0 ? $permit['signC'] : 'data:image/png;base64,' . $permit['signC']; ?>" alt="signC" style="max-height: 180px;">
 											<?php else: ?>
-											<p>No signature found.</p>
-                                            <?php endif; ?>
+											<span style="color: #999;">No signature found.</span>
+											<?php endif; ?>
 										</div>
                                         <p><label>Name :</label>
 										<?= $permit['nameC']; ?></p>
@@ -322,12 +334,12 @@
                                     <div class="col-md-3">
 										<h6><u>Area Owner</u></h6>
 										<label>Signature :</label>
-										<div class="card-body">
+										<div style="height: 200px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; background-color: #f9f9f9;">
 											<?php if (!empty($permit['signA'])): ?>
-                                            <img src="<?= strpos($permit['signA'], 'data:image/png;base64,') === 0 ? $permit['signA'] : 'data:image/png;base64,' . $permit['signA']; ?>" alt="signA" class="img-fluid">
+											<img src="<?= strpos($permit['signA'], 'data:image/png;base64,') === 0 ? $permit['signA'] : 'data:image/png;base64,' . $permit['signA']; ?>" alt="signA" style="max-height: 180px;">
 											<?php else: ?>
-											<p>No signature found.</p>
-                                            <?php endif; ?>
+											<span style="color: #999;">No signature found.</span>
+											<?php endif; ?>
 										</div>                                    
                                         <p><label>Name :</label>
 										<?=$permit['nameA'];?></p>
@@ -341,12 +353,12 @@
                                     <div class="col-md-3">
 										<h6><u>ICO</u></h6>
 										<label>Signature :</label>
-										<div class="card-body">
+										<div style="height: 200px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; background-color: #f9f9f9;">
 											<?php if (!empty($permit['signI'])): ?>
-                                            <img src="<?= strpos($permit['signI'], 'data:image/png;base64,') === 0 ? $permit['signI'] : 'data:image/png;base64,' . $permit['signI']; ?>" alt="signI" class="img-fluid">
+											<img src="<?= strpos($permit['signI'], 'data:image/png;base64,') === 0 ? $permit['signI'] : 'data:image/png;base64,' . $permit['signI']; ?>" alt="signI" style="max-height: 180px;">
 											<?php else: ?>
-											<p>No signature found.</p>
-                                            <?php endif; ?>
+											<span style="color: #999;">No signature found.</span>
+											<?php endif; ?>
 										</div>
                                         <p><label>Name :</label>
 										<?=$permit['nameI'];?></p>
@@ -361,13 +373,13 @@
                                     <div class="col-md-3">
 										<h6><u>SHO</u></h6>
 										<label>Signature :</label>
-										<div class="card-body">
+										<div style="height: 200px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; background-color: #f9f9f9;">
 											<?php if (!empty($permit['signS'])): ?>
-                                            <img src="<?= strpos($permit['signS'], 'data:image/png;base64,') === 0 ? $permit['signS'] : 'data:image/png;base64,' . $permit['signS']; ?>" alt="signC" class="img-fluid">
+											<img src="<?= strpos($permit['signS'], 'data:image/png;base64,') === 0 ? $permit['signS'] : 'data:image/png;base64,' . $permit['signS']; ?>" alt="signS" style="max-height: 180px;">
 											<?php else: ?>
-											<p>No signature found.</p>
-                                            <?php endif; ?>
-										</div>                                    
+											<span style="color: #999;">No signature found.</span>
+											<?php endif; ?>
+										</div>                                     
                                         <p><label>Name :</label>
 										<?=$permit['nameS'];?></p>
 										<p><label>Position :</label>
@@ -456,4 +468,4 @@
 									}
 									</script>
 									</body>
-									</html>									
+									</html>																		

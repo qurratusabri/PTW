@@ -1,7 +1,10 @@
 <?php
 	require 'dbconn.php';
 	session_start();
-	
+	if (!isset($_SESSION['user_type'])) {
+		header("Location: index.php");
+		exit;
+	}
 	// Handle new service submission 
 	if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService'])) 
 	{

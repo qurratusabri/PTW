@@ -1,6 +1,17 @@
 <?php
     session_start();
     require 'dbconn.php';
+	// If the user is not logged in, redirect to login page
+	if (!isset($_SESSION['user_type'])) {
+		header("Location: index.php");
+		exit;
+	}
+
+	// Optional: Restrict page access based on user_type
+	if ($_SESSION['user_type'] !== 'admin') {
+		echo "<script>alert('Access denied: Admins only'); window.location.href='appdb.php';</script>";
+		exit;
+	}
 	
 	// Query for "In Progress" projects
 	$queryInProgress = "SELECT * FROM form WHERE status = 'in progress'";

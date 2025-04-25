@@ -1,6 +1,11 @@
 <?php
     session_start();
     require 'dbconn.php';
+	// If the user is not logged in, redirect to login page
+	if (!isset($_SESSION['user_type'])) {
+		header("Location: index.php");
+		exit;
+	}
 
 // Query for "In Progress" projects
 $queryInProgress = "SELECT * FROM form WHERE status = 'in progress'";

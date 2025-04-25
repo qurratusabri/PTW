@@ -5,6 +5,16 @@
 	header("Pragma: no-cache");
 	header("Expires: 0");
 	
+	if (isset($_SESSION['user_type'])) {
+		if ($_SESSION['user_type'] === 'admin') {
+			header("Location: dashboard.php");
+			exit;
+		} elseif ($_SESSION['user_type'] === 'applicant') {
+			header("Location: appdb.php");
+			exit;
+		}
+	}
+	
 	
 	$newProjectsCount = 0;
 	$inProgressProjectsCount = 0;

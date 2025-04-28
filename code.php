@@ -354,8 +354,16 @@
 				
 				} else {
 				// Insert new permit record
-				$query_permit = "INSERT INTO permit (id, signC, nameC, positionC, dateC, timeC, signA, nameA, positionA, dateA, timeA, signI, nameI, positionI, dateI, timeI, signS, nameS, positionS, dateS, timeS, file) VALUES 
-				('$applicantID', '$signC', '$nameC', '$positionC', '$dateC', '$timeC', '$signA', '$nameA', '$positionA', '$dateA', '$timeA', '$signI', '$nameI', '$positionI', '$dateI', '$timeI', '$signS', '$nameS', '$positionS', '$dateS', '$timeS', '$storedFilePath')";
+				$query_permit = "INSERT INTO permit 
+				(id, signC, nameC, positionC, dateC, timeC, 
+				signA, nameA, positionA, dateA, timeA, 
+				signI, nameI, positionI, dateI, timeI, 
+				signS, nameS, positionS, dateS, timeS, file) 
+				VALUES 
+				('$applicantID', '$signC', '$nameC', '$positionC', '$dateC', '$timeC', 
+				'$signA', '$nameA', '$positionA', '$dateA', '$timeA', 
+				'$signI', '$nameI', '$positionI', '$dateI', '$timeI', 
+				'$signS', '$nameS', '$positionS', '$dateS', '$timeS', '$storedFilePath')";
 			}
 			$query_run_permit = mysqli_query($conn, $query_permit);
 			if (!$query_run_permit){
@@ -394,20 +402,32 @@
 		$worksites = $_POST['worksite']; // Get the array of worksites                         
 		$ppes = $_POST['ppe']; // Get the array of ppe   
 		$status = "pending"; // Set status by default
+		$signC = mysqli_real_escape_string($conn, $_POST['signC']);
+		$nameC = isset($_POST['nameC']) ? mysqli_real_escape_string($conn, $_POST['nameC']) : null;
+		$positionC = isset($_POST['positionC']) ? mysqli_real_escape_string($conn, $_POST['positionC']) : null;
+		$dateC = isset($_POST['dateC']) ? mysqli_real_escape_string($conn, $_POST['dateC']) : null;
+		$timeC = isset($_POST['timeC']) ? mysqli_real_escape_string($conn, $_POST['timeC']) : null;
+		$signA = mysqli_real_escape_string($conn, $_POST['signA']);
+		$nameA = isset($_POST['nameA']) ? mysqli_real_escape_string($conn, $_POST['nameA']) : null;
+		$positionA = isset($_POST['positionA']) ? mysqli_real_escape_string($conn, $_POST['positionA']) : null;
+		$dateA = isset($_POST['dateA']) ? mysqli_real_escape_string($conn, $_POST['dateA']) : null;
+		$timeA = isset($_POST['timeA']) ? mysqli_real_escape_string($conn, $_POST['timeA']) : null;
+		$signI = mysqli_real_escape_string($conn, $_POST['signI']);
+		$nameI = isset($_POST['nameI']) ? mysqli_real_escape_string($conn, $_POST['nameI']) : null;
+		$positionI = isset($_POST['positionI']) ? mysqli_real_escape_string($conn, $_POST['positionI']) : null;
+		$dateI = isset($_POST['dateI']) ? mysqli_real_escape_string($conn, $_POST['dateI']) : null;
+		$timeI = isset($_POST['timeI']) ? mysqli_real_escape_string($conn, $_POST['timeI']) : null;
+		$signS = mysqli_real_escape_string($conn, $_POST['signS']);
+		$nameS = isset($_POST['nameS']) ? mysqli_real_escape_string($conn, $_POST['nameS']) : null;
+		$positionS = isset($_POST['positionS']) ? mysqli_real_escape_string($conn, $_POST['positionS']) : null;
+		$dateS = isset($_POST['dateS']) ? mysqli_real_escape_string($conn, $_POST['dateS']) : null;
+		$timeS = isset($_POST['timeS']) ? mysqli_real_escape_string($conn, $_POST['timeS']) : null;
 		
 		$remark = isset($_POST['remark']) ? mysqli_real_escape_string($conn, $_POST['remark']) : '';
 		
-		$briefDate = isset($_POST['briefDate']) && $_POST['briefDate'] !== ''
-		? "'" . mysqli_real_escape_string($conn, $_POST['briefDate']) . "'"
-		: 'NULL';
-		
-		$briefTime = isset($_POST['briefTime']) && $_POST['briefTime'] !== ''
-		? "'" . mysqli_real_escape_string($conn, $_POST['briefTime']) . "'"
-		: 'NULL';
-		
-		$briefConducted = isset($_POST['briefConducted']) && $_POST['briefConducted'] !== ''
-		? "'" . mysqli_real_escape_string($conn, $_POST['briefConducted']) . "'"
-		: 'NULL';
+		$briefDate = mysqli_real_escape_string($conn, $_POST['briefDate']);
+		$briefTime = mysqli_real_escape_string($conn, $_POST['briefTime']);
+		$briefConducted = mysqli_real_escape_string($conn, $_POST['briefConducted']);
 		
 		
 		// Combine workers' names into a single string
@@ -448,58 +468,69 @@
 		$userType = $_SESSION['user_type'];
 		$username = $_SESSION['username'];
 		
+		if ($userType === 'admin') {
+			$column = 'adminID';
+			} else {
+			$column = 'applicantID';
+		}
+		
 		// Debugging: Print session variables
 		error_log("Session user_id: " . $userID);
 		error_log("Session user_type: " . $userType);
 		
-		// Insert form data
-		if($userType == 'admin'){
-			$query = "INSERT INTO form (name,services,status,
-			remark,durationFrom,durationTo,timeFrom,timeTo,
-			companyName,svName,icNo,contactNo,longTermContract,
-			workersName,passNo,exactLocation,workType,hazards,
-			briefDate,briefTime,briefConducted,ppe,worksite,$column) 
-			VALUES 
-			('$name','$services','$status','$remark','$durationFrom',
-			'$durationTo','$timeFrom','$timeTo','$companyName','$svName',
-			'$icNo','$contactNo','$longTermContract','$workersNamesString',
-			'$passNosString','$exactLocation','$workTypesString','$hazardString',
-			'$briefDate','$briefTime','$briefConducted','$ppesString','$worksitesString','$userID')";
-			
-			}else{
-			$query = "INSERT INTO form (name,services,status,
-			remark,durationFrom,durationTo,timeFrom,timeTo,
-			companyName,svName,icNo,contactNo,longTermContract,
-			workersName,passNo,exactLocation,workType,hazards,
-			ppe,worksite,$column) 
-			VALUES 
-			('$name','$services','$status','$remark','$durationFrom',
-			'$durationTo','$timeFrom','$timeTo','$companyName','$svName',
-			'$icNo','$contactNo','$longTermContract','$workersNamesString',
-			'$passNosString','$exactLocation','$workTypesString','$hazardString',
-			'$ppesString','$worksitesString','$userID')";
-		}
+		$query = "INSERT INTO form (name, services, status, remark,
+		durationFrom, durationTo, timeFrom, timeTo,
+		companyName, svName, icNo, contactNo, longTermContract,
+		workersName, passNo, exactLocation, workType, hazards,
+		briefDate, briefTime, briefConducted, ppe, worksite, $column) 
+		VALUES 
+		('$name', '$services', '$status', '$remark', '$durationFrom',
+		'$durationTo', '$timeFrom', '$timeTo', '$companyName', '$svName',
+		'$icNo', '$contactNo', '$longTermContract', '$workersNamesString',
+		'$passNosString', '$exactLocation', '$workTypesString', '$hazardString',
+		'$briefDate', '$briefTime', '$briefConducted', '$ppesString', '$worksitesString', '$userID')";
 		
 		if (mysqli_query($conn, $query)) {
-			$formId = mysqli_insert_id($conn); // Get last inserted form ID
-			sendAdminNotification(
-			$username, 
-			$formId, 
-			$name, 
-			$companyName, 
-			$durationFrom, 
-			$durationTo, 
-			$timeFrom, 
-			$timeTo, 
-			$services, 
-			$workTypesString, 
-			$exactLocation
-			);
-			$_SESSION['message'] = "Project Created Successfully";
+			$formId = mysqli_insert_id($conn); // 🚀 Get the new form ID
+			
+			// After form inserted, INSERT into permit too
+			$query_permit = "INSERT INTO permit 
+			(id, signC, nameC, positionC, dateC, timeC, 
+			signA, nameA, positionA, dateA, timeA, 
+			signI, nameI, positionI, dateI, timeI, 
+			signS, nameS, positionS, dateS, timeS) 
+			VALUES 
+			('$formId', '$signC', '$nameC', '$positionC', '$dateC', '$timeC', 
+			'$signA', '$nameA', '$positionA', '$dateA', '$timeA', 
+			'$signI', '$nameI', '$positionI', '$dateI', '$timeI', 
+			'$signS', '$nameS', '$positionS', '$dateS', '$timeS')";
+			
+			if (mysqli_query($conn, $query_permit)) {
+				// BOTH form and permit saved
+				sendAdminNotification(
+				$username, 
+				$formId, 
+				$name, 
+				$companyName, 
+				$durationFrom, 
+				$durationTo, 
+				$timeFrom, 
+				$timeTo, 
+				$services, 
+				$workTypesString, 
+				$exactLocation
+				);
+				$_SESSION['message'] = "Project and Permit Created Successfully";
+				} else {
+				$_SESSION['message'] = "Project Created but Permit Failed";
+				error_log("Permit SQL Error: " . mysqli_error($conn));
+			}
 			} else {
 			$_SESSION['message'] = "Project Not Created";
-			error_log("SQL Error: " . mysqli_error($conn));
+			error_log("Form SQL Error: " . mysqli_error($conn));
 		}
+		
+		// Redirect based on user type
 		header("Location: " . ($userType === 'admin' ? "dashboard.php" : "appdb.php"));
 		exit();
 		

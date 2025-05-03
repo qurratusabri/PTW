@@ -5,13 +5,6 @@
 		header("Location: index.php");
 		exit;
 	}
-	
-	// Optional: Restrict page access based on user_type
-	if ($_SESSION['user_type'] !== 'admin') {
-		echo "<script>alert('Access denied: Admins only'); window.location.href='appdb.php';</script>";
-		exit;
-	}
-	
 	// Handle new service submission 
 	if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['newService'])) 
 	{
@@ -445,44 +438,58 @@
 			let worksiteCheckboxes = document.querySelectorAll('input[name="worksite[]"]');
 			let ppeCheckboxes = document.querySelectorAll('input[name="ppe[]"]');
 			
-			for (let i = 0; i < workTypeCheckboxes.length; i++) {
-				if (workTypeCheckboxes[i].checked) {
+			let workTypeOtherText = document.getElementById('workType_other_text');
+			let worksiteOtherText = document.getElementById('worksite_other_text');
+			let ppeOtherText = document.getElementById('ppe_other_text');
+			
+			// Check if any checkboxes are selected or if the "Others" text has content
+			for (let checkbox of workTypeCheckboxes) {
+				if (checkbox.checked) {
 					workTypeChecked = true;
 					break;
 				}
 			}
+			if (!workTypeChecked && workTypeOtherText && workTypeOtherText.value.trim() !== '') {
+				workTypeChecked = true;
+			}
 			
-			for (let i = 0; i < worksiteCheckboxes.length; i++) {
-				if (worksiteCheckboxes[i].checked) {
+			for (let checkbox of worksiteCheckboxes) {
+				if (checkbox.checked) {
 					worksiteChecked = true;
 					break;
 				}
 			}
+			if (!worksiteChecked && worksiteOtherText && worksiteOtherText.value.trim() !== '') {
+				worksiteChecked = true;
+			}
 			
-			for (let i = 0; i < ppeCheckboxes.length; i++) {
-				if (ppeCheckboxes[i].checked) {
+			for (let checkbox of ppeCheckboxes) {
+				if (checkbox.checked) {
 					ppeChecked = true;
 					break;
 				}
 			}
+			if (!ppeChecked && ppeOtherText && ppeOtherText.value.trim() !== '') {
+				ppeChecked = true;
+			}
 			
+			// Alerts if any section is invalid
 			if (!workTypeChecked) {
-				alert("Please select at least one type of work.");
+				alert("Please select at least one type of work or provide input in 'Others'.");
 				return false;
 			}
-			
 			if (!worksiteChecked) {
-				alert("Please select at least one worksite preparation/precaution.");
+				alert("Please select at least one worksite preparation/precaution or provide input in 'Others'.");
 				return false;
 			}
-			
 			if (!ppeChecked) {
-				alert("Please select at least one personal protective equipment.");
+				alert("Please select at least one personal protective equipment or provide input in 'Others'.");
 				return false;
 			}
 			
 			return true;
 		}
+		
 		function confirmLogout() {
 			var confirmation = confirm("Are you sure you want to logout?");
 			return confirmation;
@@ -510,4 +517,4 @@
 	</script>
 	
 </body>
-</html>																				
+</html>

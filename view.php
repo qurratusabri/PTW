@@ -99,41 +99,8 @@
 		<title>View Details</title>
 	</head>
 	<body>
-		<div class="sidebar" id="sidebar">
-			<div class="top">
-				<div class="logo">
-					<i class="bx bx-hard-hat"></i>
-					<span>PermitToWork</span>
-				</div>
-				<i class="bx bx-menu" id="btn"></i>
-			</div>
-			<ul>
-				<li>
-					<a href="dashboard.php">
-						<i class="bx bxs-grid-alt"></i>
-						<span class="nav-item">Dashboard</span>
-					</a>
-				</li>
-				<li>
-					<a href="form.php">
-						<i class="bx bx-file-blank"></i>
-						<span class="nav-item">Form</span>
-					</a>
-				</li>
-				<li>
-					<a href="services.php">
-						<i class="bx bx-add-to-queue"></i>
-						<span class="nav-item">Services</span>
-					</a>
-				</li>
-				<li>
-					<a href="logout.php" onclick="return confirmLogout();">
-						<i class="bx bx-log-out"></i>
-						<span class="nav-item">Logout</span>
-					</a>
-				</li>
-			</ul>
-		</div>
+		<!-- Sidebar -->
+		<?php include 'sidebar.php'; ?>
 		
 		<div class="main-content" id="main-content">
 			<div class="container mt-5">
@@ -441,31 +408,31 @@
 										</div>
                                         <?php endif; ?>
 										
-									<!-- Display PDFs in a Column -->
-									<?php if (!empty($pdfFiles)): ?>
-									<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px;">
-									<?php foreach ($pdfFiles as $pdfPath): ?>
-									<?php $pdfName = basename($pdfPath); ?>
-									<a href="<?= $pdfPath ?>" target="_blank" style="display: block; text-decoration: none; color: #007bff; font-weight: bold;"><?= $pdfName ?></a>
-									<?php endforeach; ?>
+										<!-- Display PDFs in a Column -->
+										<?php if (!empty($pdfFiles)): ?>
+										<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px;">
+											<?php foreach ($pdfFiles as $pdfPath): ?>
+											<?php $pdfName = basename($pdfPath); ?>
+											<a href="<?= $pdfPath ?>" target="_blank" style="display: block; text-decoration: none; color: #007bff; font-weight: bold;"><?= $pdfName ?></a>
+											<?php endforeach; ?>
+										</div>
+										<?php endif; ?>
 									</div>
-									<?php endif; ?>
-                                    </div>
 									<?php else: ?>
                                     <p>No file uploaded.</p>
 									<?php endif; ?>
-									</div>
-									</div>
-									</div>
-									</div>
-									</div>
-									<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-									<script src="script.js"></script>
-									<script>
-									function confirmLogout() {
-									var confirmation = confirm("Are you sure you want to logout?");
-									return confirmation;
-									}
-									</script>
-									</body>
-									</html>																		
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+				<script src="script.js"></script>
+				<script>
+					function confirmLogout() {
+						var confirmation = confirm("Are you sure you want to logout?");
+						return confirmation;
+					}
+				</script>
+			</body>
+		</html>																						

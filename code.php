@@ -20,16 +20,16 @@
 			$mail->isSMTP();
 			$mail->Host = 'smtp.gmail.com';
 			$mail->SMTPAuth = true;
-			$mail->Username = '';         // your Gmail address
-			$mail->Password = '';      // 16-digit App Password
+			$mail->Username = 'ethosylar1990@gmail.com';         // your Gmail address
+			$mail->Password = 'wgxxyqfhbkfupegk';      // 16-digit App Password
 			$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // Use SSL
 			$mail->Port = 465;
 			
-			$mail->setFrom('', 'Permit To Work System');
+			$mail->setFrom('ethosylar1990@gmail.com', 'Permit To Work System');
 			
 			// Add recipients
 			$adminEmails = [
-			''
+			'haziq.fiqri.4417@gmail.com'
 			];
 			
 			foreach ($adminEmails as $email) {
@@ -236,10 +236,21 @@
 				throw new Exception("Invalid status selected.");
 			}
 			
+			// ─────────────────────────────────────────────────────────────
+			// STEP 1: Fetch Existing Files (before any file operations)
+			// ─────────────────────────────────────────────────────────────
+			$sql_fetch_existing = "SELECT * FROM permit WHERE id='$applicantID'";
+			$result = mysqli_query($conn, $sql_fetch_existing);
+			$existing_permit = mysqli_fetch_assoc($result);
+			$existingFiles = !empty($existing_permit['file']) ? explode(",", $existing_permit['file']) : [];
+			
+			
+			// ─────────────────────────────────────────────────────────────
+			// STEP 2: Handle New Uploads
+			// ─────────────────────────────────────────────────────────────
+			$newFiles = [];
+			
 			if (!empty($_FILES['files']['name'][0])) {
-				$filePaths = [];
-				
-				// Ensure uploads directory exists
 				$uploadDir = "uploads/";
 				if (!is_dir($uploadDir)) {
 					mkdir($uploadDir, 0777, true);
@@ -256,33 +267,45 @@
 						exit();
 					}
 					
-					if ($fileSize > 10485760) { // 10MB = 10 * 1024 * 1024
+					if ($fileSize > 10 * 1024 * 1024) {
 						echo "<script>alert('File too large. Max size is 10MB.'); window.history.back();</script>";
 						exit();
 					}
 					
-					$uniqueFileName = time() . "_" . $fileName;
+					$uniqueFileName = time() . "_" . basename($fileName);
 					$filePath = $uploadDir . $uniqueFileName;
 					
 					if (move_uploaded_file($fileTmp, $filePath)) {
-						$filePaths[] = $filePath;
+						$newFiles[] = $filePath;
 						} else {
 						echo "<script>alert('File upload failed for $fileName.'); window.history.back();</script>";
 						exit();
 					}
 				}
-				
-				// Merge with existing files if editing
-				$sql_fetch_existing = "SELECT file FROM permit WHERE id='$applicantID'";
-				$result = mysqli_query($conn, $sql_fetch_existing);
-				$row = mysqli_fetch_assoc($result);
-				$existingFiles = !empty($row['file']) ? explode(",", $row['file']) : [];
-				
-				$allFiles = array_merge($existingFiles, $filePaths);
-				$storedFilePath = implode(",", $allFiles);
-				} else {
-				$storedFilePath = isset($existing_permit['file']) ? $existing_permit['file'] : '';
 			}
+			
+			
+			// ─────────────────────────────────────────────────────────────
+			// STEP 3: Handle Deletions (if any marked for deletion)
+			// ─────────────────────────────────────────────────────────────
+			$deletedFiles = isset($_POST['deleted_files']) ? $_POST['deleted_files'] : [];
+			
+			foreach ($deletedFiles as $deletedFile) {
+				$deletedFile = trim($deletedFile);
+				if (file_exists($deletedFile)) {
+					unlink($deletedFile); // delete from disk
+				}
+			}
+			
+			// Remove deleted files from the existing list
+			$remainingFiles = array_diff($existingFiles, $deletedFiles);
+			
+			// ─────────────────────────────────────────────────────────────
+			// STEP 4: Combine all (remaining + new), then implode
+			// ─────────────────────────────────────────────────────────────
+			$finalFiles = array_merge($remainingFiles, $newFiles);
+			$storedFilePath = implode(",", $finalFiles);
+			
 			
 			// Start transaction 
 			mysqli_begin_transaction($conn);
@@ -382,157 +405,111 @@
 		}
 	}
 	
-	if(isset($_POST['save_form'])) {
-		// Sanitize inputs
-		$name = mysqli_real_escape_string($conn, $_POST['name']);
-		$services = mysqli_real_escape_string($conn, $_POST['services']);
-		$durationFrom = mysqli_real_escape_string($conn, $_POST['durationFrom']);
-		$durationTo = mysqli_real_escape_string($conn, $_POST['durationTo']);
-		$timeFrom = mysqli_real_escape_string($conn, $_POST['timeFrom']);
-		$timeTo = mysqli_real_escape_string($conn, $_POST['timeTo']);
-		$companyName = mysqli_real_escape_string($conn, $_POST['companyName']);
-		$svName = mysqli_real_escape_string($conn, $_POST['svName']);
-		$icNo = mysqli_real_escape_string($conn, $_POST['icNo']);
-		$contactNo = mysqli_real_escape_string($conn, $_POST['contactNo']);
-		$longTermContract = mysqli_real_escape_string($conn, $_POST['longTermContract']);
-		$workersNames = $_POST['workersName']; // Get the array of workers' names
-		$passNos = $_POST['passNo']; // Get the array of pass no
-		$exactLocation = mysqli_real_escape_string($conn, $_POST['exactLocation']);
-		$workTypes = $_POST['workType']; // Get the array of work types
-		$worksites = $_POST['worksite']; // Get the array of worksites                         
-		$ppes = $_POST['ppe']; // Get the array of ppe   
-		$status = "pending"; // Set status by default
-		$signC = mysqli_real_escape_string($conn, $_POST['signC']);
-		$nameC = isset($_POST['nameC']) ? mysqli_real_escape_string($conn, $_POST['nameC']) : null;
-		$positionC = isset($_POST['positionC']) ? mysqli_real_escape_string($conn, $_POST['positionC']) : null;
-		$dateC = isset($_POST['dateC']) ? mysqli_real_escape_string($conn, $_POST['dateC']) : null;
-		$timeC = isset($_POST['timeC']) ? mysqli_real_escape_string($conn, $_POST['timeC']) : null;
-		$signA = mysqli_real_escape_string($conn, $_POST['signA']);
-		$nameA = isset($_POST['nameA']) ? mysqli_real_escape_string($conn, $_POST['nameA']) : null;
-		$positionA = isset($_POST['positionA']) ? mysqli_real_escape_string($conn, $_POST['positionA']) : null;
-		$dateA = isset($_POST['dateA']) ? mysqli_real_escape_string($conn, $_POST['dateA']) : null;
-		$timeA = isset($_POST['timeA']) ? mysqli_real_escape_string($conn, $_POST['timeA']) : null;
-		$signI = mysqli_real_escape_string($conn, $_POST['signI']);
-		$nameI = isset($_POST['nameI']) ? mysqli_real_escape_string($conn, $_POST['nameI']) : null;
-		$positionI = isset($_POST['positionI']) ? mysqli_real_escape_string($conn, $_POST['positionI']) : null;
-		$dateI = isset($_POST['dateI']) ? mysqli_real_escape_string($conn, $_POST['dateI']) : null;
-		$timeI = isset($_POST['timeI']) ? mysqli_real_escape_string($conn, $_POST['timeI']) : null;
-		$signS = mysqli_real_escape_string($conn, $_POST['signS']);
-		$nameS = isset($_POST['nameS']) ? mysqli_real_escape_string($conn, $_POST['nameS']) : null;
-		$positionS = isset($_POST['positionS']) ? mysqli_real_escape_string($conn, $_POST['positionS']) : null;
-		$dateS = isset($_POST['dateS']) ? mysqli_real_escape_string($conn, $_POST['dateS']) : null;
-		$timeS = isset($_POST['timeS']) ? mysqli_real_escape_string($conn, $_POST['timeS']) : null;
+	if (isset($_POST['save_form'])) {
+		require_once 'dbconn.php';
 		
-		$remark = isset($_POST['remark']) ? mysqli_real_escape_string($conn, $_POST['remark']) : '';
-		
-		$briefDate = mysqli_real_escape_string($conn, $_POST['briefDate']);
-		$briefTime = mysqli_real_escape_string($conn, $_POST['briefTime']);
-		$briefConducted = mysqli_real_escape_string($conn, $_POST['briefConducted']);
-		
-		
-		// Combine workers' names into a single string
-		$workersNamesString = implode(", ", array_map(function($workerName) use ($conn) {
-			return mysqli_real_escape_string($conn, $workerName);
-		}, $workersNames));
-		
-		// Combine pass no into a single string
-		$passNosString = implode(", ", array_map(function($passNo) use ($conn) {
-			return mysqli_real_escape_string($conn, $passNo);
-		}, $passNos));
-		
-		// Combine work types into a single string
-		$workTypesString = implode(", ", array_map(function($workType) use ($conn) {
-			return mysqli_real_escape_string($conn, $workType);
-		}, $workTypes));
-		
-		// Combine hazard into a single string
-		$hazard = isset($_POST['hazards']) ? $_POST['hazards'] : []; // prevent null error
-		$hazardString = implode(", ", array_map(function($hazards) use ($conn) {
-			return mysqli_real_escape_string($conn, $hazards);
-		}, $hazard));
-		
-		// Combine ppe into a single string
-		$ppesString = implode(", ", array_map(function($ppe) use ($conn) {
-			return mysqli_real_escape_string($conn, $ppe);
-		}, $ppes));
-		
-		// Combine worksites into a single string
-		$worksitesString = implode(", ", array_map(function($worksite) use ($conn) {
-			return mysqli_real_escape_string($conn, $worksite);
-		}, $worksites));
-		
-		if (session_status() === PHP_SESSION_NONE) {
-			session_start();
-		}
 		$userID = $_SESSION['user_id'];
 		$userType = $_SESSION['user_type'];
 		$username = $_SESSION['username'];
+		$column = $userType === 'admin' ? 'adminID' : 'applicantID';
 		
-		if ($userType === 'admin') {
-			$column = 'adminID';
-			} else {
-			$column = 'applicantID';
-		}
+		// Prepare values (sanitize)
+		$name = $_POST['name'];
+		$services = $_POST['services'];
+		$status = 'pending';
+		$remark = $_POST['remark'] ?? '';
+		$durationFrom = $_POST['durationFrom'];
+		$durationTo = $_POST['durationTo'];
+		$timeFrom = $_POST['timeFrom'];
+		$timeTo = $_POST['timeTo'];
+		$companyName = $_POST['companyName'];
+		$svName = $_POST['svName'];
+		$icNo = $_POST['icNo'];
+		$contactNo = $_POST['contactNo'];
+		$longTermContract = $_POST['longTermContract'];
+		$exactLocation = $_POST['exactLocation'];
+		$briefDate = $_POST['briefDate'];
+		$briefTime = $_POST['briefTime'];
+		$briefConducted = $_POST['briefConducted'];
 		
-		// Debugging: Print session variables
-		error_log("Session user_id: " . $userID);
-		error_log("Session user_type: " . $userType);
+		$workersNamesString = implode(", ", $_POST['workersName'] ?? []);
+		$passNosString = implode(", ", $_POST['passNo'] ?? []);
+		$workTypesString = implode(", ", $_POST['workType'] ?? []);
+		$hazardString = implode(", ", $_POST['hazards'] ?? []);
+		$ppesString = implode(", ", $_POST['ppe'] ?? []);
+		$worksitesString = implode(", ", $_POST['worksite'] ?? []);
 		
-		$query = "INSERT INTO form (name, services, status, remark,
-		durationFrom, durationTo, timeFrom, timeTo,
+		// Permit fields
+		$signC = $_POST['signC'];
+		$nameC = $_POST['nameC'];
+		$positionC = $_POST['positionC'];
+		$dateC = $_POST['dateC'];
+		$timeC = $_POST['timeC'];
+		$signA = $_POST['signA'];
+		$nameA = $_POST['nameA'];
+		$positionA = $_POST['positionA'];
+		$dateA = $_POST['dateA'];
+		$timeA = $_POST['timeA'];
+		$signI = $_POST['signI'];
+		$nameI = $_POST['nameI'];
+		$positionI = $_POST['positionI'];
+		$dateI = $_POST['dateI'];
+		$timeI = $_POST['timeI'];
+		$signS = $_POST['signS'];
+		$nameS = $_POST['nameS'];
+		$positionS = $_POST['positionS'];
+		$dateS = $_POST['dateS'];
+		$timeS = $_POST['timeS'];
+		
+		// 1. Insert into `form`
+		$stmt = $conn->prepare("INSERT INTO form 
+		(name, services, status, remark, durationFrom, durationTo, timeFrom, timeTo,
 		companyName, svName, icNo, contactNo, longTermContract,
 		workersName, passNo, exactLocation, workType, hazards,
-		briefDate, briefTime, briefConducted, ppe, worksite, $column) 
-		VALUES 
-		('$name', '$services', '$status', '$remark', '$durationFrom',
-		'$durationTo', '$timeFrom', '$timeTo', '$companyName', '$svName',
-		'$icNo', '$contactNo', '$longTermContract', '$workersNamesString',
-		'$passNosString', '$exactLocation', '$workTypesString', '$hazardString',
-		'$briefDate', '$briefTime', '$briefConducted', '$ppesString', '$worksitesString', '$userID')";
+		briefDate, briefTime, briefConducted, ppe, worksite, $column)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		
-		if (mysqli_query($conn, $query)) {
-			$formId = mysqli_insert_id($conn); // 🚀 Get the new form ID
+		$stmt->bind_param("ssssssssssssssssssssssss", 
+		$name, $services, $status, $remark, $durationFrom, $durationTo, $timeFrom, $timeTo,
+		$companyName, $svName, $icNo, $contactNo, $longTermContract,
+		$workersNamesString, $passNosString, $exactLocation, $workTypesString, $hazardString,
+		$briefDate, $briefTime, $briefConducted, $ppesString, $worksitesString, $userID
+		);
+		
+		if ($stmt->execute()) {
+			$formId = $stmt->insert_id;
 			
-			// After form inserted, INSERT into permit too
-			$query_permit = "INSERT INTO permit 
-			(id, signC, nameC, positionC, dateC, timeC, 
-			signA, nameA, positionA, dateA, timeA, 
-			signI, nameI, positionI, dateI, timeI, 
+			// 2. Insert into `permit`
+			$stmt_permit = $conn->prepare("INSERT INTO permit 
+            (id, signC, nameC, positionC, dateC, timeC,
+			signA, nameA, positionA, dateA, timeA,
+			signI, nameI, positionI, dateI, timeI,
 			signS, nameS, positionS, dateS, timeS) 
-			VALUES 
-			('$formId', '$signC', '$nameC', '$positionC', '$dateC', '$timeC', 
-			'$signA', '$nameA', '$positionA', '$dateA', '$timeA', 
-			'$signI', '$nameI', '$positionI', '$dateI', '$timeI', 
-			'$signS', '$nameS', '$positionS', '$dateS', '$timeS')";
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			
-			if (mysqli_query($conn, $query_permit)) {
-				// BOTH form and permit saved
+			$stmt_permit->bind_param("issssssssssssssssssss",
+            $formId, $signC, $nameC, $positionC, $dateC, $timeC,
+            $signA, $nameA, $positionA, $dateA, $timeA,
+            $signI, $nameI, $positionI, $dateI, $timeI,
+            $signS, $nameS, $positionS, $dateS, $timeS);
+			
+			if ($stmt_permit->execute()) {
 				sendAdminNotification(
-				$username, 
-				$formId, 
-				$name, 
-				$companyName, 
-				$durationFrom, 
-				$durationTo, 
-				$timeFrom, 
-				$timeTo, 
-				$services, 
-				$workTypesString, 
-				$exactLocation
+                $username, $formId, $name, $companyName, $durationFrom,
+                $durationTo, $timeFrom, $timeTo, $services, $workTypesString, $exactLocation
 				);
 				$_SESSION['message'] = "Project and Permit Created Successfully";
 				} else {
-				$_SESSION['message'] = "Project Created but Permit Failed";
-				error_log("Permit SQL Error: " . mysqli_error($conn));
+				$_SESSION['message'] = "Form Created but Permit Failed";
+				error_log("Permit insert error: " . $stmt_permit->error);
 			}
+			
 			} else {
 			$_SESSION['message'] = "Project Not Created";
-			error_log("Form SQL Error: " . mysqli_error($conn));
+			error_log("Form insert error: " . $stmt->error);
 		}
 		
-		// Redirect based on user type
 		header("Location: " . ($userType === 'admin' ? "dashboard.php" : "appdb.php"));
 		exit();
-		
 	}
 ?>

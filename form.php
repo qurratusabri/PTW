@@ -1,13 +1,11 @@
 <?php
 	require 'dbconn.php';
 	session_start();
-	
-	// If the user is not logged in, redirect to login page
 	if (!isset($_SESSION['user_type'])) {
 		header("Location: index.php");
 		exit;
 	}
-
+	
 	// Optional: Restrict page access based on user_type
 	if ($_SESSION['user_type'] !== 'admin') {
 		echo "<script>alert('Access denied: Admins only'); window.location.href='appdb.php';</script>";
@@ -46,372 +44,470 @@
 		<title>Form</title>
 	</head>
 	<body>
+		<!-- Sidebar -->
+		<?php include 'sidebar.php'; ?>
 		
-		<div class="sidebar" id="sidebar">
-			<div class="top">
-				<div class="logo">
-					<i class="bx bx-hard-hat"></i>
-					<span>PermitToWork</span>
-				</div>
-			<i class="bx bx-menu" id="btn"></i>
-			</div>
-			<ul>
-            <li>
-			<a href="dashboard.php">
-			<i class="bx bxs-grid-alt"></i>
-			<span class="nav-item">Dashboard</span>
-			</a>
-            </li>
-            <li>
-			<a href="form.php">
-			<i class="bx bx-file-blank"></i>
-			<span class="nav-item">Form</span>
-			</a>
-            </li>
-            <li>
-			<a href="services.php">
-			<i class="bx bx-add-to-queue"></i>
-			<span class="nav-item">Services</span>
-			</a>
-            </li>
-            <li>
-			<a href="logout.php" onclick="return confirmLogout();">
-			<i class="bx bx-log-out"></i>
-			<span class="nav-item">Logout</span>
-			</a>
-            </li>
-			</ul>
-			</div>
-			<div class="main-content" id="main-content">
+		<div class="main-content" id="main-content">
 			<div class="container mt-5">
-			<?php include('message.php'); ?>
-			<div class="row">
-            <div class="col-md-12">
-			<div class="card">
-			<div class="card-header">
-			<h4>Project Add 
-			<a href="dashboard.php" class="btn btn-primary float-end">BACK</a>
-			</h4>
+				<?php include('message.php'); ?>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="card">
+							<div class="card-header">
+								<h4>Project Add 
+									<a href="appdb.php" class="btn btn-primary float-end">BACK</a>
+								</h4>
+							</div>
+							<div class="card-body">
+								<form action="code.php" method="POST" onsubmit="return validateForm()">
+									<div class="row mb-4">
+										<h4>KPJ KLANG SPECIALIST HOSPITAL (Project Manager / Coordinator)</h4>
+										<div class="col-md-4">
+											<label>Applicant's Name:</label>
+											<input type="text" name="name" class="form-control" required>
+										</div>
+										<div class="col-md-4"> 
+											<label for="services">Services:</label> 
+											<select name="services" class="form-select" required> 
+												<?php while ($row = $services->fetch_assoc()) { ?> 
+													<option value="<?php echo $row['serviceName']; ?>"><?php echo $row['serviceName']; ?></option> 
+												<?php } ?> 
+											</select> 
+										</div>
+									</div>
+									<div class="row mb-4">
+										<h6>Work Duration (date):</h6>
+										<div class="col-md-4">
+											<label for="durationFrom">From:</label>
+										<input type="date" name="durationFrom" class="form-control" required></div>
+										<div class="col-md-4">
+											<label for="durationTo">To:</label>
+											<input type="date" name="durationTo" class="form-control" required>
+										</div>
+									</div>
+									<div class="row mb-4">
+										<h6>Work Time:</h6>
+										<div class="col-md-4">
+											<label for="timeFrom">From:</label>
+										<input type="time" name="timeFrom" class="form-control" required></div>
+										<div class="col-md-4">
+											<label for="timeTo">To:</label>
+											<input type="time" name="timeTo" class="form-control" required>
+										</div>
+									</div>
+									<div class="row mb-3">
+										<h4>CONTRACTOR</h4>
+										<div class="col-md-4">
+											<label for="companyName">Company Name:</label>
+											<input type="text" name="companyName" class="form-control" required>
+										</div>
+										<div class="col-md-4">
+											<label for="svName">Supervisor Name:</label>
+											<input type="text" name="svName" class="form-control" required>  
+										</div>
+										<div class="col-md-4">
+											<label for="icNo">IC No./Passport No:</label>
+											<input type="text" name="icNo" class="form-control" required>
+										</div>
+										<div class="col-md-4">
+											<label for="contactNo">Contact No.:</label>
+											<input type="tel" name="contactNo" class="form-control" required>
+										</div>
+										<div class="col-md-4">
+											<label for="longTermContract">Term of Contract:</label>
+											<input type="text" name="longTermContract" class="form-control" required>
+										</div>
+									</div>
+									<br>
+									<hr>
+									<div class="row md-4">
+										<div class="col-md-6">
+											<h4>Contractor Worker's Names:-</h4>
+											<table id="workersTable">
+												<tr>
+													<td>1</td>
+													<td><input type="text" name="workersName[]" class="form-control" placeholder="Worker's Name" required></td>
+													<td><input type="text" name="passNo[]" class="form-control" placeholder="IC No./Passport No." required></td>
+													<td><button type="button" class="removeWorkerButton">Remove</button></td>  
+												</tr>
+											</table>
+											<br>
+											<button type="button" id="addWorkerButton">Add Worker</button>  
+										</div>
+										<div class="col-md-4">
+											<h4>AREA / LOCATION OF WORK</h4>
+											<label for="exactLocation">Exact Location of Work:</label>
+											<input type="text" name="exactLocation" class="form-control" required>
+										</div>
+									</div>
+									<hr>
+									<br>
+									<div class="row md-4">
+										
+										<div class="col-md-4">
+											<h4>TYPE OF WORK</h4>
+											<h6>Select Type(s) of Work:</h6>
+											<input type="checkbox" name="workType[]" value="Aircond / Chiller">
+											<label for="aircond">Aircond / Chiller</label><br>
+											<input type="checkbox" name="workType[]" value="Pest Control">
+											<label for="pc">Pest Control</label><br>
+											<input type="checkbox" name="workType[]" value="Civil / Structural">
+											<label for="cs">Civil / Structural</label><br>
+											<input type="checkbox" name="workType[]" value="Roofing">
+											<label for="roof">Roofing</label><br>
+											<input type="checkbox" name="workType[]" value="Sewage">
+											<label for="sewage">Sewage</label><br>
+											<input type="checkbox" name="workType[]" value="Furniture">
+											<label for="furniture">Furniture</label><br>
+											<input type="checkbox" name="workType[]" value="Painting (internal / external)">
+											<label for="painting">Painting (internal / external)</label><br>
+											<input type="checkbox" name="workType[]" value="Flooring">
+											<label for="flooring">Flooring</label><br>
+											<input type="checkbox" name="workType[]" value="Wiring">
+											<label for="wiring">Wiring</label><br>
+											<input type="checkbox" name="workType[]" value="Electrical">
+											<label for="electrical">Electrical</label><br>
+											<input type="checkbox" name="workType[]" value="Plumbing">
+											<label for="plum">Plumbing</label><br>
+											<input type="checkbox" name="workType[]" value="Cabling">
+											<label for="cable">Cabling</label><br>
+											<input type="checkbox" name="workType[]" value="Maintenance">
+											<label for="maintain">Maintenance</label><br>
+											<input type="checkbox" name="workType[]" value="HEPA filter Servicing">
+											<label for="hepa">HEPA filter Servicing</label><br>
+											<input type="checkbox" name="workType[]" value="High Dusting">
+											<label for="hd">High Dusting</label><br>
+											<input type="checkbox" name="workType[]" value="Exterior facade cleaning">
+											<label for="efc">Exterior facade cleaning</label><br>
+											<input type="checkbox" name="workType[]" value="Renovation">
+											<label for="renovate">Renovation</label><br>
+											<input type="checkbox" name="workType[]" value="PPM">
+											<label for="ppm">PPM</label><br>
+											<input type="checkbox" name="workType[]" value="Corrective Maintenance">
+											<label for="cm">Corrective Maintenance</label><br>
+											<input type="checkbox" name="workType[]" value="Equipment breakdown">
+											<label for="eb">Equipment breakdown</label><br>
+											<input type="checkbox" id="workType_other_checkbox">
+											<label for="workType_other_checkbox">Others:</label><br>
+											<textarea id="workType_other_text" name="workType[]" class="form-control" style="display:none;" placeholder="Specify other work type"></textarea>
+										</div>
+										<div class="col-md-4">
+											<h4>WORKSITE PREPARATION / PRECAUTIONS</h4>
+											<h6>Select:</h6>
+											<input type="checkbox" name="worksite[]" value="Site prepared as informed">
+											<label for="site">Site prepared as informed</label><br>
+											<input type="checkbox" name="worksite[]" value="Scaffold Required">
+											<label for="scaffold">Scaffold Required</label><br>
+											<input type="checkbox" name="worksite[]" value="Toxic Fumes Detector">
+											<label for="toxic">Toxic Fumes Detector</label><br>
+											<input type="checkbox" name="worksite[]" value="PMA / PMT e.g crane">
+											<label for="pma">PMA / PMT e.g crane</label><br>
+											<input type="checkbox" name="worksite[]" value="Gas Detector">
+											<label for="gas">Gas Detector</label><br>
+											<input type="checkbox" name="worksite[]" value="Forced Ventilation">
+											<label for="forced">Forced Ventilation</label><br>
+											<input type="checkbox" name="worksite[]" value="Equipment Isolated">
+											<label for="equipment">Equipment Isolated</label><br>
+											<input type="checkbox" name="worksite[]" value="LOTO">
+											<label for="loto">LOTO</label><br>
+											<input type="checkbox" name="worksite[]" value="Additional Fire Extinguisher / blanket">
+											<label for="additional">Additional Fire Extinguisher / blanket</label><br>
+											<input type="checkbox" name="worksite[]" value="Equipment / Line Drained / Blinded">
+											<label for="blinded">Equipment / Line Drained / Blinded</label><br>
+											<input type="checkbox" name="worksite[]" value="Area Barricaded / Signed">
+											<label for="area">Area Barricaded / Signed</label><br>
+											<input type="checkbox" name="worksite[]" value="Confined Space">
+											<label for="confined">Confined Space</label><br>
+											<input type="checkbox" name="worksite[]" value="Secure Tools from Falling">
+											<label for="secure">Secure Tools from Falling</label><br>
+											<input type="checkbox" name="worksite[]" value="Noise / Dust Insulation">
+											<label for="noise">Noise / Dust Insulation</label><br>
+											<input type="checkbox" name="worksite[]" value="Ladder / Step Stool">
+											<label for="ladder">Ladder / Step Stool</label><br>
+											<input type="checkbox" name="worksite[]" value="Spillage Kits">
+											<label for="spillage">Spillage Kits</label><br>
+											<input type="checkbox" name="worksite[]" value="Inform Workers In and the Next Area">
+											<label for="inform">Inform Workers In and the Next Area</label><br>
+											<input type="checkbox" name="worksite[]" value="Hot work">
+											<label for="hot">Hot work</label><br>
+											<input type="checkbox" id="worksite_other_checkbox">
+											<label for="worksite_other_checkbox">If Others please state:</label><br>
+											<textarea id="worksite_other_text" name="worksite[]" class="form-control" style="display:none;" placeholder="Specify other worksite preparation"></textarea>
+										</div>
+										<div class="col-md-4">
+											<h4>PERSONAL PROTECTIVE EQUIPMENTS</h4>
+											<h6>Select PPE:</h6>
+											<input type="checkbox" name="ppe[]" value="Safety Helmet">
+											<label for="helmet">Safety Helmet</label><br>
+											<input type="checkbox" name="ppe[]" value="Face Shield">
+											<label for="fc">Safe Shield</label><br>
+											<input type="checkbox" name="ppe[]" value="Welding Mask">
+											<label for="wm">Welding Mask</label><br>
+											<input type="checkbox" name="ppe[]" value="Safety Shoes">
+											<label for="shoes">Safety Shoes</label><br>
+											<input type="checkbox" name="ppe[]" value="Chemical Boots">
+											<label for="boots">Chemical Boots</label><br>
+											<input type="checkbox" name="ppe[]" value="Leather Gloves">
+											<label for="lg">Leather Gloves</label><br>
+											<input type="checkbox" name="ppe[]" value="Safety Googles">
+											<label for="goggles">Safety Goggles</label><br>
+											<input type="checkbox" name="ppe[]" value="Canvas">
+											<label for="canvas">Canvas</label><br>
+											<input type="checkbox" name="ppe[]" value="Gloves">
+											<label for="gloves">Gloves</label><br>
+											<input type="checkbox" name="ppe[]" value="Full Body Harness">
+											<label for="fbh">Full Body Harness</label><br>
+											<input type="checkbox" name="ppe[]" value="Ear plug/ear muff">
+											<label for="ear">Ear plug/ear muff</label><br>
+											<h6>Respirator:</h6>
+											<input type="checkbox" name="ppe[]" value="Dusk Mask">
+											<label for="dusk">Dusk Mask</label><br>
+											<input type="checkbox" name="ppe[]" value="Fumes Mask">
+											<label for="fumes">Fumes Mask</label><br>
+											<input type="checkbox" name="ppe[]" value="Painting Mask">
+											<label for="painting">Painting Mask</label><br>
+										</div>
+										<div class="row mb-3">
+										</div>
+										<br>
+										<hr>
+										<div class="row mb-3">
+											<h4>SAFETY BRIEFING RECORD</h4>
+											<div class="col-md-4">
+												<label for="briefDate">Date:</label>
+											<input type="date" name="briefDate" class="form-control"></div>
+											<div class="col-md-4">      
+												<label for="briefTime">Time:</label>
+											<input type="time" name="briefTime" class="form-control"></div>
+											<div class="col-md-4">
+												<label for="briefConducted">Conducted by:</label>
+												<input type="text" name="briefConducted" class="form-control">
+											</div>
+										</div>
+										<br>
+										<hr>
+										<div class="row mb-3">
+											<h4>Permit Authorisation Section</h4>
+											
+											<!-- Contractor -->
+											<div class="col-md-3">
+												<h6><u>Contractor</u></h6>
+												<label for="signC">Signature:</label><br>
+												<?php if (!empty($permit['signC'])): ?>
+												<img src="<?= htmlspecialchars($permit['signC']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+												<?php else: ?>
+												<canvas id="signC-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+												<?php endif; ?>
+												<input type="hidden" name="signC" id="signC" value="<?= htmlspecialchars($permit['signC'] ?? '') ?>">
+												<button id="clear-signC">Clear Signature</button>
+												<br><label for="nameC">Name:</label>
+												<input type="text" name="nameC" class="form-control" value="<?= htmlspecialchars($permit['nameC'] ?? '') ?>">
+												<label for="positionC">Position:</label>
+												<input type="text" name="positionC" class="form-control" value="<?= htmlspecialchars($permit['positionC'] ?? '') ?>">
+												<label for="dateC">Date:</label>
+												<input type="date" name="dateC" class="form-control" value="<?= htmlspecialchars($permit['dateC'] ?? '') ?>">
+												<label for="timeC">Time:</label>
+												<input type="time" name="timeC" class="form-control" value="<?= htmlspecialchars($permit['timeC'] ?? '') ?>">
+											</div>
+											
+											<!-- Area Owner -->
+											<div class="col-md-3">
+												<h6><u>Area Owner</u></h6>
+												<label for="signA">Signature:</label><br>
+												<?php if (!empty($permit['signA'])): ?>
+												<img src="<?= htmlspecialchars($permit['signA']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+												<?php else: ?>
+												<canvas id="signA-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+												<?php endif; ?>
+												<input type="hidden" name="signA" id="signA" value="<?= htmlspecialchars($permit['signA'] ?? '') ?>">
+												<button id="clear-signA">Clear Signature</button>
+												<br><label for="nameA">Name:</label>
+												<input type="text" name="nameA" class="form-control" value="<?= htmlspecialchars($permit['nameA'] ?? '') ?>">
+												<label for="positionA">Position:</label>
+												<input type="text" name="positionA" class="form-control" value="<?= htmlspecialchars($permit['positionA'] ?? '') ?>">
+												<label for="dateA">Date:</label>
+												<input type="date" name="dateA" class="form-control" value="<?= htmlspecialchars($permit['dateA'] ?? '') ?>">
+												<label for="timeA">Time:</label>
+												<input type="time" name="timeA" class="form-control" value="<?= htmlspecialchars($permit['timeA'] ?? '') ?>">
+											</div>
+											
+											<!-- ICO -->
+											<div class="col-md-3">
+												<h6><u>ICO</u></h6>
+												<label for="signI">Signature:</label><br>
+												<?php if (!empty($permit['signI'])): ?>
+												<img src="<?= htmlspecialchars($permit['signI']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+												<?php else: ?>
+												<canvas id="signI-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+												<?php endif; ?>
+												<input type="hidden" name="signI" id="signI" value="<?= htmlspecialchars($permit['signI'] ?? '') ?>">
+												<button id="clear-signI">Clear Signature</button>
+												<br><label for="nameI">Name:</label>
+												<input type="text" name="nameI" class="form-control" value="<?= htmlspecialchars($permit['nameI'] ?? '') ?>">
+												<label for="positionI">Position:</label>
+												<input type="text" name="positionI" class="form-control" value="<?= htmlspecialchars($permit['positionI'] ?? '') ?>">
+												<label for="dateI">Date:</label>
+												<input type="date" name="dateI" class="form-control" value="<?= htmlspecialchars($permit['dateI'] ?? '') ?>">
+												<label for="timeI">Time:</label>
+												<input type="time" name="timeI" class="form-control" value="<?= htmlspecialchars($permit['timeI'] ?? '') ?>">
+											</div>
+											
+											<!-- SHO -->
+											<div class="col-md-3">
+												<h6><u>SHO</u></h6>
+												<label for="signS">Signature:</label><br>
+												<?php if (!empty($permit['signS'])): ?>
+												<img src="<?= htmlspecialchars($permit['signS']); ?>" width="200" height="200" style="border: 1px solid #000;" /><br>
+												<?php else: ?>
+												<canvas id="signS-pad" width="200" height="200" style="border: 1px solid #000;"></canvas><br>
+												<?php endif; ?>
+												<input type="hidden" name="signS" id="signS" value="<?= htmlspecialchars($permit['signS'] ?? '') ?>">
+												<button id="clear-signS">Clear Signature</button>
+												<br><label for="nameS">Name:</label>
+												<input type="text" name="nameS" class="form-control" value="<?= htmlspecialchars($permit['nameS'] ?? '') ?>">
+												<label for="positionS">Position:</label>
+												<input type="text" name="positionS" class="form-control" value="<?= htmlspecialchars($permit['positionS'] ?? '') ?>">
+												<label for="dateS">Date:</label>
+												<input type="date" name="dateS" class="form-control" value="<?= htmlspecialchars($permit['dateS'] ?? '') ?>">
+												<label for="timeS">Time:</label>
+												<input type="time" name="timeS" class="form-control" value="<?= htmlspecialchars($permit['timeS'] ?? '') ?>">
+											</div>
+										</div>
+										<p>
+											<div class="col-md-4">
+												<button type="submit" name="save_form" class="btn btn-primary">Submit Form</button>
+											</div>
+										</p>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-			<div class="card-body">
-			<form action="code.php" method="POST" onsubmit="return validateForm()">
-			<div class="row mb-4">
-			<h4>KPJ KLANG SPECIALIST HOSPITAL (Project Manager / Coordinator)</h4>
-			<div class="col-md-4">
-			<label>Applicant's Name*</label>
-			<input type="text" name="name" class="form-control" required>
-			</div>
-			<div class="col-md-4"> 
-			<label for="services">Services*</label> 
-			<select name="services" class="form-select" required> 
-			<?php while ($row = $services->fetch_assoc()) { ?> 
-			<option value="<?php echo $row['serviceName']; ?>"><?php echo $row['serviceName']; ?></option> 
-			<?php } ?> 
-			</select> 
-			</div>
-			</div>
-			<div class="row mb-4">
-			<h6>Work Duration (date)*</h6>
-			<div class="col-md-4">
-			<label for="durationFrom">From:</label>
-			<input type="date" name="durationFrom" class="form-control" required></div>
-			<div class="col-md-4">
-			<label for="durationTo">To:</label>
-			<input type="date" name="durationTo" class="form-control" required>
-			</div>
-			</div>
-			<div class="row mb-4">
-			<h6>Work Time*</h6>
-			<div class="col-md-4">
-			<label for="timeFrom">From:</label>
-			<input type="time" name="timeFrom" class="form-control" required></div>
-			<div class="col-md-4">
-			<label for="timeTo">To:</label>
-			<input type="time" name="timeTo" class="form-control" required>
-			</div>
-			</div>
-			<div class="row mb-3">
-			<h4>CONTRACTOR</h4>
-			<div class="col-md-4">
-			<label for="companyName">Company Name*</label>
-			<input type="text" name="companyName" class="form-control" required>
-			</div>
-			<div class="col-md-4">
-			<label for="svName">Supervisor Name*</label>
-			<input type="text" name="svName" class="form-control" required>  
-			</div>
-			<div class="col-md-4">
-			<label for="icNo">IC No./Passport No*</label>
-			<input type="text" name="icNo" class="form-control" required>
-			</div>
-			<div class="col-md-4">
-			<label for="contactNo">Contact No.*</label>
-			<input type="tel" name="contactNo" class="form-control" required>
-			</div>
-			<div class="col-md-4">
-			<label for="longTermContract">Term of Contract*</label>
-			<input type="text" name="longTermContract" class="form-control" required>
-			</div>
-			</div>
-			<div class="row md-4">
-			<div class="col-md-6">
-			<h4>Contractor Worker's Names*</h4>
-			<table id="workersTable">
-			<tr>
-			<td>1</td>
-			<td><input type="text" name="workersName[]" class="form-control" placeholder="Worker's Name" required></td>
-			<td><input type="text" name="passNo[]" class="form-control" placeholder="IC No./Passport No" required></td>
-			<td><button type="button" class="removeWorkerButton">Remove</button></td> 
-			</tr>
-			</table>
-			<button type="button" id="addWorkerButton">Add Worker</button>  
-			</div>
-			<div class="col-md-4">
-			<h4>AREA / LOCATION OF WORK</h4>
-			<label for="exactLocation">Exact Location of Work*</label>
-			<input type="text" name="exactLocation" class="form-control" required>
-			</div>
-			</div>
-			<div class="row md-4">
-			
-			<div class="col-md-4">
-			<h4>TYPE OF WORK</h4>
-			<h6>Select Type(s) of Work*</h6>
-			<input type="checkbox" name="workType[]" value="Aircond / Chiller">
-			<label for="aircond">Aircond / Chiller</label><br>
-			<input type="checkbox" name="workType[]" value="Pest Control">
-			<label for="pc">Pest Control</label><br>
-			<input type="checkbox" name="workType[]" value="Civil / Structural">
-			<label for="cs">Civil / Structural</label><br>
-			<input type="checkbox" name="workType[]" value="Roofing">
-			<label for="roof">Roofing</label><br>
-			<input type="checkbox" name="workType[]" value="Sewage">
-			<label for="sewage">Sewage</label><br>
-			<input type="checkbox" name="workType[]" value="Furniture">
-			<label for="furniture">Furniture</label><br>
-			<input type="checkbox" name="workType[]" value="Painting (internal / external)">
-			<label for="painting">Painting (internal / external)</label><br>
-			<input type="checkbox" name="workType[]" value="Flooring">
-			<label for="flooring">Flooring</label><br>
-			<input type="checkbox" name="workType[]" value="Wiring">
-			<label for="wiring">Wiring</label><br>
-			<input type="checkbox" name="workType[]" value="Electrical">
-			<label for="electrical">Electrical</label><br>
-			<input type="checkbox" name="workType[]" value="Plumbing">
-			<label for="plum">Plumbing</label><br>
-			<input type="checkbox" name="workType[]" value="Cabling">
-			<label for="cable">Cabling</label><br>
-			<input type="checkbox" name="workType[]" value="Maintenance">
-			<label for="maintain">Maintenance</label><br>
-			<input type="checkbox" name="workType[]" value="HEPA filter Servicing">
-			<label for="hepa">HEPA filter Servicing</label><br>
-			<input type="checkbox" name="workType[]" value="High Dusting">
-			<label for="hd">High Dusting</label><br>
-			<input type="checkbox" name="workType[]" value="Exterior facade cleaning">
-			<label for="efc">Exterior facade cleaning</label><br>
-			<input type="checkbox" name="workType[]" value="Renovation">
-			<label for="renovate">Renovation</label><br>
-			<input type="checkbox" name="workType[]" value="PPM">
-			<label for="ppm">PPM</label><br>
-			<input type="checkbox" name="workType[]" value="Corrective Maintenance">
-			<label for="cm">Corrective Maintenance</label><br>
-			<input type="checkbox" name="workType[]" value="Equipment breakdown">
-			<label for="eb">Equipment breakdown</label><br>
-			<label for="others">Others:</label><br>
-			<input type="textbox" name="workType[]" class="form-control">
-			</div>
-			<div class="col-md-4">
-			<h4>WORKSITE PREPARATION / PRECAUTIONS</h4>
-			<h6>Select*</h6>
-			<input type="checkbox" name="worksite[]" value="Site prepared as informed">
-			<label for="site">Site prepared as informed</label><br>
-			<input type="checkbox" name="worksite[]" value="Scaffold Required">
-			<label for="scaffold">Scaffold Required</label><br>
-			<input type="checkbox" name="worksite[]" value="Toxic Fumes Detector">
-			<label for="toxic">Toxic Fumes Detector</label><br>
-			<input type="checkbox" name="worksite[]" value="PMA / PMT e.g crane">
-			<label for="pma">PMA / PMT e.g crane</label><br>
-			<input type="checkbox" name="worksite[]" value="Gas Detector">
-			<label for="gas">Gas Detector</label><br>
-			<input type="checkbox" name="worksite[]" value="Forced Ventilation">
-			<label for="forced">Forced Ventilation</label><br>
-			<input type="checkbox" name="worksite[]" value="Equipment Isolated">
-			<label for="equipment">Equipment Isolated</label><br>
-			<input type="checkbox" name="worksite[]" value="LOTO">
-			<label for="loto">LOTO</label><br>
-			<input type="checkbox" name="worksite[]" value="Additional Fire Extinguisher / blanket">
-			<label for="additional">Additional Fire Extinguisher / blanket</label><br>
-			<input type="checkbox" name="worksite[]" value="Equipment / Line Drained / Blinded">
-			<label for="blinded">Equipment / Line Drained / Blinded</label><br>
-			<input type="checkbox" name="worksite[]" value="Area Barricaded / Signed">
-			<label for="area">Area Barricaded / Signed</label><br>
-			<input type="checkbox" name="worksite[]" value="Confined Space">
-			<label for="confined">Confined Space</label><br>
-			<input type="checkbox" name="worksite[]" value="Secure Tools from Falling">
-			<label for="secure">Secure Tools from Falling</label><br>
-			<input type="checkbox" name="worksite[]" value="Noise / Dust Insulation">
-			<label for="noise">Noise / Dust Insulation</label><br>
-			<input type="checkbox" name="worksite[]" value="Ladder / Step Stool">
-			<label for="ladder">Ladder / Step Stool</label><br>
-			<input type="checkbox" name="worksite[]" value="Spillage Kits">
-			<label for="spillage">Spillage Kits</label><br>
-			<input type="checkbox" name="worksite[]" value="Inform Workers In and the Next Area">
-			<label for="inform">Inform Workers In and the Next Area</label><br>
-			<input type="checkbox" name="worksite[]" value="Hot work">
-			<label for="hot">Hot work</label><br>
-			<label for="others">If Others please state:</label><br>
-			<input type="textbox" name="worksite[]" class="form-control">
-			</div>
-			<div class="col-md-4">
-			<h4>PERSONAL PROTECTIVE EQUIPMENTS</h4>
-			<h6>Select PPE*</h6>
-			<input type="checkbox" name="ppe[]" value="Safety Helmet">
-			<label for="helmet">Safety Helmet</label><br>
-			<input type="checkbox" name="ppe[]" value="Face Shield">
-			<label for="fc">Safe Shield</label><br>
-			<input type="checkbox" name="ppe[]" value="Welding Mask">
-			<label for="wm">Welding Mask</label><br>
-			<input type="checkbox" name="ppe[]" value="Safety Shoes">
-			<label for="shoes">Safety Shoes</label><br>
-			<input type="checkbox" name="ppe[]" value="Chemical Boots">
-			<label for="boots">Chemical Boots</label><br>
-			<input type="checkbox" name="ppe[]" value="Leather Gloves">
-			<label for="lg">Leather Gloves</label><br>
-			<input type="checkbox" name="ppe[]" value="Safety Googles">
-			<label for="goggles">Safety Goggles</label><br>
-			<input type="checkbox" name="ppe[]" value="Canvas">
-			<label for="canvas">Canvas</label><br>
-			<input type="checkbox" name="ppe[]" value="Gloves">
-			<label for="gloves">Gloves</label><br>
-			<input type="checkbox" name="ppe[]" value="Full Body Harness">
-			<label for="fbh">Full Body Harness</label><br>
-			<input type="checkbox" name="ppe[]" value="Ear plug/ear muff">
-			<label for="ear">Ear plug/ear muff</label><br>
-			<h6>Respirator:</h6>
-			<input type="checkbox" name="ppe[]" value="Dusk Mask">
-			<label for="dusk">Dusk Mask</label><br>
-			<input type="checkbox" name="ppe[]" value="Fumes Mask">
-			<label for="fumes">Fumes Mask</label><br>
-			<input type="checkbox" name="ppe[]" value="Painting Mask">
-			<label for="painting">Painting Mask</label><br>
-			</div>
-			<p>
-			<div class="col-md-4">
-			<button type="submit" name="save_form" class="btn btn-primary">Submit Form</button>
-			</div>
-			</p>
-			</div>
-			</form>
-			</div>
-			</div>
-			</div>
-            </div>
-			</div>
-			</div>
-			</div>
-			<script src="script.js"></script>
-			<script>
-			const workersTable = document.getElementById('workersTable').getElementsByTagName('tbody')[0];
-			const addWorkerButton = document.getElementById('addWorkerButton');
-			
-			// Function to update row numbers
-			function updateRowNumbers() {
-            const rows = workersTable.rows;
-            for (let i = 0; i < rows.length; i++) {
-			rows[i].cells[0].textContent = i + 1; // Update the No. column
-            }
+		</div>
+	</div>
+	<script src="script.js"></script>
+	<script>
+		const workersTable = document.getElementById('workersTable').getElementsByTagName('tbody')[0];
+		const addWorkerButton = document.getElementById('addWorkerButton');
+		
+		// Function to update row numbers
+		function updateRowNumbers() {
+			const rows = workersTable.rows;
+			for (let i = 0; i < rows.length; i++) {
+				rows[i].cells[0].textContent = i + 1; // Update the No. column
 			}
+		}
+		// Add Worker Button Logic
+		addWorkerButton.addEventListener('click', function () {
+			// Get the current row count
+			const rowCount = workersTable.rows.length;
 			
-			// Add Worker Button Logic
-			addWorkerButton.addEventListener('click', function () {
-            // Get the current row count
-            const rowCount = workersTable.rows.length;
+			// Create a new row
+			const newRow = workersTable.insertRow();
 			
-            // Create a new row
-            const newRow = workersTable.insertRow();
+			// Create cells
+			const cell1 = newRow.insertCell(0); // Row Number
+			const cell2 = newRow.insertCell(1); // Worker's Name Input
+			const cell3 = newRow.insertCell(2); // Pass No Input
+			const cell4 = newRow.insertCell(3); // Action Buttons
 			
-            // Create cells
-            const cell1 = newRow.insertCell(0); // Row Number
-            const cell2 = newRow.insertCell(1); // Worker's Name Input
-            const cell3 = newRow.insertCell(2); // Pass No Input
-            const cell4 = newRow.insertCell(3); // Action Buttons
+			// Populate the cells
+			cell1.textContent = rowCount + 1;
+			cell2.innerHTML = '<input type="text" name="workersName[]" class="form-control">';
+			cell3.innerHTML = '<input type="text" name="passNo[]" class="form-control">';
+			cell4.innerHTML = '<button type="button" class="removeWorkerButton">Remove</button>';
 			
-            // Populate the cells
-            cell1.textContent = rowCount + 1;
-            cell2.innerHTML = '<input type="text" name="workersName[]" class="form-control">';
-            cell3.innerHTML = '<input type="text" name="passNo[]" class="form-control">';
-            cell4.innerHTML = '<button type="button" class="removeWorkerButton">Remove</button>';
-			
-            // Add event listener for the Remove button
-            const removeButton = cell4.querySelector('.removeWorkerButton');
-            removeButton.addEventListener('click', function () {
-			workersTable.deleteRow(newRow.rowIndex - 1);
-			updateRowNumbers(); // Update the row numbers after deletion
-            });
+			// Add event listener for the Remove button
+			const removeButton = cell4.querySelector('.removeWorkerButton');
+			removeButton.addEventListener('click', function () {
+				workersTable.deleteRow(newRow.rowIndex - 1);
+				updateRowNumbers(); // Update the row numbers after deletion
 			});
-			
-			// Initial Remove Button Logic
-			document.querySelectorAll('.removeWorkerButton').forEach(button => {
-            button.addEventListener('click', function () {
-			const row = button.closest('tr');
-			workersTable.deleteRow(row.rowIndex - 1);
-			updateRowNumbers(); // Update the row numbers after deletion
-            });
+		});
+		
+		// Initial Remove Button Logic
+		document.querySelectorAll('.removeWorkerButton').forEach(button => {
+			button.addEventListener('click', function () {
+				const row = button.closest('tr');
+				workersTable.deleteRow(row.rowIndex - 1);
+				updateRowNumbers(); // Update the row numbers after deletion
 			});
+		});
+		
+		function validateForm() {
+			let workTypeChecked = false;
+			let worksiteChecked = false;
+			let ppeChecked = false;
 			
+			let workTypeCheckboxes = document.querySelectorAll('input[name="workType[]"]');
+			let worksiteCheckboxes = document.querySelectorAll('input[name="worksite[]"]');
+			let ppeCheckboxes = document.querySelectorAll('input[name="ppe[]"]');
 			
-			function validateForm() {
-            let workTypeChecked = false;
-            let worksiteChecked = false;
-            let ppeChecked = false;
-			
-            let workTypeCheckboxes = document.querySelectorAll('input[name="workType[]"]');
-            let worksiteCheckboxes = document.querySelectorAll('input[name="worksite[]"]');
-            let ppeCheckboxes = document.querySelectorAll('input[name="ppe[]"]');
-			
-            for (let i = 0; i < workTypeCheckboxes.length; i++) {
-			if (workTypeCheckboxes[i].checked) {
-			workTypeChecked = true;
-			break;
+			for (let i = 0; i < workTypeCheckboxes.length; i++) {
+				if (workTypeCheckboxes[i].checked) {
+					workTypeChecked = true;
+					break;
+				}
 			}
-            }
 			
-            for (let i = 0; i < worksiteCheckboxes.length; i++) {
-			if (worksiteCheckboxes[i].checked) {
-			worksiteChecked = true;
-			break;
+			for (let i = 0; i < worksiteCheckboxes.length; i++) {
+				if (worksiteCheckboxes[i].checked) {
+					worksiteChecked = true;
+					break;
+				}
 			}
-            }
 			
-            for (let i = 0; i < ppeCheckboxes.length; i++) {
-			if (ppeCheckboxes[i].checked) {
-			ppeChecked = true;
-			break;
+			for (let i = 0; i < ppeCheckboxes.length; i++) {
+				if (ppeCheckboxes[i].checked) {
+					ppeChecked = true;
+					break;
+				}
 			}
-            }
 			
-            if (!workTypeChecked) {
-			alert("Please select at least one type of work.");
-			return false;
-            }
-            
-            if (!worksiteChecked) {
-			alert("Please select at least one worksite preparation/precaution.");
-			return false;
-            }
-            
-            if (!ppeChecked) {
-			alert("Please select at least one personal protective equipment.");
-			return false;
-            }
-			
-            return true;
+			if (!workTypeChecked) {
+				alert("Please select at least one type of work.");
+				return false;
 			}
-			function confirmLogout() {
+			
+			if (!worksiteChecked) {
+				alert("Please select at least one worksite preparation/precaution.");
+				return false;
+			}
+			
+			if (!ppeChecked) {
+				alert("Please select at least one personal protective equipment.");
+				return false;
+			}
+			
+			return true;
+		}
+		function confirmLogout() {
 			var confirmation = confirm("Are you sure you want to logout?");
 			return confirmation;
+		}
+	</script>
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			function toggleInput(checkboxId, inputId) {
+				const checkbox = document.getElementById(checkboxId);
+				const input = document.getElementById(inputId);
+				if (checkbox && input) {
+					input.style.display = checkbox.checked ? "block" : "none";
+					checkbox.addEventListener("change", function () {
+						input.style.display = checkbox.checked ? "block" : "none";
+						if (!checkbox.checked) input.value = "";
+					});
+				}
 			}
-			</script>
 			
-			</body>
-			</html>						
+			toggleInput("workType_other_checkbox", "workType_other_text");
+			toggleInput("worksite_other_checkbox", "worksite_other_text");
+			toggleInput("ppe_other_checkbox", "ppe_other_text");
+			toggleInput("hazards_other_checkbox", "hazards_other_text");
+		});
+	</script>
+	
+</body>
+</html>																				

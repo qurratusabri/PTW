@@ -37,36 +37,8 @@
 		<title>Form</title>
 	</head>
 	<body>
-		
-		<div class="sidebar" id="sidebar">
-			<div class="top">
-				<div class="logo">
-					<i class="bx bx-hard-hat"></i>
-					<span>PermitToWork</span>
-				</div>
-				<i class="bx bx-menu" id="btn"></i>
-			</div>
-			<ul>
-				<li>
-					<a href="appdb.php">
-						<i class="bx bxs-grid-alt"></i>
-						<span class="nav-item">Dashboard</span>
-					</a>
-				</li>
-				<li>
-					<a href="form1.php">
-						<i class="bx bx-file-blank"></i>
-						<span class="nav-item">Form</span>
-					</a>
-				</li>
-				<li>
-					<a href="logout.php" onclick="return confirmLogout();">
-						<i class="bx bx-log-out"></i>
-						<span class="nav-item">Logout</span>
-					</a>
-				</li>
-			</ul>
-		</div>
+		<!-- Sidebar -->
+		<?php include 'sidebar.php'; ?>
 		
 		<div class="main-content" id="main-content">
 			<div class="container mt-5">
@@ -443,21 +415,21 @@
 			// Add event listener for the Remove button
 			const removeButton = cell4.querySelector('.removeWorkerButton');
 			removeButton.addEventListener('click', function () {
-				workersTable.deleteRow(newRow.rowIndex - 1);
-				updateRowNumbers(); // Update the row numbers after deletion
+			workersTable.deleteRow(newRow.rowIndex - 1);
+			updateRowNumbers(); // Update the row numbers after deletion
 			});
-		});
-		
-		// Initial Remove Button Logic
-		document.querySelectorAll('.removeWorkerButton').forEach(button => {
+			});
+			
+			// Initial Remove Button Logic
+			document.querySelectorAll('.removeWorkerButton').forEach(button => {
 			button.addEventListener('click', function () {
-				const row = button.closest('tr');
-				workersTable.deleteRow(row.rowIndex - 1);
-				updateRowNumbers(); // Update the row numbers after deletion
+			const row = button.closest('tr');
+			workersTable.deleteRow(row.rowIndex - 1);
+			updateRowNumbers(); // Update the row numbers after deletion
 			});
-		});
-		
-		function validateForm() {
+			});
+			
+			function validateForm() {
 			let workTypeChecked = false;
 			let worksiteChecked = false;
 			let ppeChecked = false;
@@ -467,68 +439,68 @@
 			let ppeCheckboxes = document.querySelectorAll('input[name="ppe[]"]');
 			
 			for (let i = 0; i < workTypeCheckboxes.length; i++) {
-				if (workTypeCheckboxes[i].checked) {
-					workTypeChecked = true;
-					break;
-				}
+			if (workTypeCheckboxes[i].checked) {
+			workTypeChecked = true;
+			break;
+			}
 			}
 			
 			for (let i = 0; i < worksiteCheckboxes.length; i++) {
-				if (worksiteCheckboxes[i].checked) {
-					worksiteChecked = true;
-					break;
-				}
+			if (worksiteCheckboxes[i].checked) {
+			worksiteChecked = true;
+			break;
+			}
 			}
 			
 			for (let i = 0; i < ppeCheckboxes.length; i++) {
-				if (ppeCheckboxes[i].checked) {
-					ppeChecked = true;
-					break;
-				}
+			if (ppeCheckboxes[i].checked) {
+			ppeChecked = true;
+			break;
+			}
 			}
 			
 			if (!workTypeChecked) {
-				alert("Please select at least one type of work.");
-				return false;
+			alert("Please select at least one type of work.");
+			return false;
 			}
 			
 			if (!worksiteChecked) {
-				alert("Please select at least one worksite preparation/precaution.");
-				return false;
+			alert("Please select at least one worksite preparation/precaution.");
+			return false;
 			}
 			
 			if (!ppeChecked) {
-				alert("Please select at least one personal protective equipment.");
-				return false;
+			alert("Please select at least one personal protective equipment.");
+			return false;
 			}
 			
 			return true;
-		}
-		function confirmLogout() {
+			}
+			function confirmLogout() {
 			var confirmation = confirm("Are you sure you want to logout?");
 			return confirmation;
-		}
-	</script>
-	<script>
-		document.addEventListener("DOMContentLoaded", function () {
+			}
+			</script>
+			<script>
+			document.addEventListener("DOMContentLoaded", function () {
 			function toggleInput(checkboxId, inputId) {
-				const checkbox = document.getElementById(checkboxId);
-				const input = document.getElementById(inputId);
-				if (checkbox && input) {
-					input.style.display = checkbox.checked ? "block" : "none";
-					checkbox.addEventListener("change", function () {
-						input.style.display = checkbox.checked ? "block" : "none";
-						if (!checkbox.checked) input.value = "";
-					});
-				}
+			const checkbox = document.getElementById(checkboxId);
+			const input = document.getElementById(inputId);
+			if (checkbox && input) {
+			input.style.display = checkbox.checked ? "block" : "none";
+			checkbox.addEventListener("change", function () {
+			input.style.display = checkbox.checked ? "block" : "none";
+			if (!checkbox.checked) input.value = "";
+			});
+			}
 			}
 			
 			toggleInput("workType_other_checkbox", "workType_other_text");
 			toggleInput("worksite_other_checkbox", "worksite_other_text");
 			toggleInput("ppe_other_checkbox", "ppe_other_text");
 			toggleInput("hazards_other_checkbox", "hazards_other_text");
-		});
-	</script>
-	
-</body>
-</html>																	
+			});
+			</script>
+			
+			</body>
+			</html>																				

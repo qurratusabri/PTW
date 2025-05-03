@@ -1,37 +1,39 @@
 <?php
     session_start();
     require 'dbconn.php';
+	// If the user is not logged in, redirect to login page
 	if (!isset($_SESSION['user_type'])) {
 		header("Location: index.php");
 		exit;
 	}
-	?>
+?>
 <!doctype html>
 <html lang="en">
 <head>
-    <!-- Required meta tags -->
+    <!-- Meta & Title -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Overdue Details</title>
 
+    <!-- Icons & Bootstrap -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-
+	
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
     <link rel="shortcut icon" type="x-icon" href="helmet.png">
-
-    <title>Stop Work Details</title>
 </head>
 <body>
 	<!-- Sidebar -->
     <?php include 'sidebar.php'; ?>
-	
+
+    <!-- Main Content -->
     <div class="main-content" id="main-content">
         <div class="container mt-4">
             <div class="row">
@@ -39,7 +41,7 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4>Stop Work Details
+                            <h4>Overdue Details
                             <a href="appdb.php" class="btn btn-primary float-end">BACK</a>
                             </h4>
                         </div>
@@ -47,35 +49,38 @@
                             <table id="myTable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
+                                        <th>Serial No.</th>
                                         <th>Applicant's Name</th>
                                         <th>Services</th>
                                         <th>Area / Location Of Work</th>
-                                        <th>Submission Date</th>
+                                        <th>Permit Expired</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php 
-                                        $query = "SELECT * FROM form WHERE status = 'stop work'";
+                                        $query = "SELECT * FROM form 
+                                                  WHERE durationTo < CURDATE() 
+                                                  AND status NOT IN ('completed', 'cancel', 'stop work')";
                                         $query_run = mysqli_query($conn, $query);
 
                                         if(mysqli_num_rows($query_run) > 0)
                                         {
                                             foreach($query_run as $ptw)
                                             {
-                                                // Format the date to dd/mm/yy 
-                                            $dateTime = new DateTime($ptw['date']); 
-                                            $formattedDate = $dateTime->format('d/m/y');
-                                            $formattedTime = $dateTime->format('h:i A');
+                                                $permitDate = new DateTime($ptw['durationTo']); 
+                                                $formattedPermitDate = $permitDate->format('d/m/y');
                                                 ?>
                                                 <tr>
-                                                    <td><?= $ptw['name']; ?></td>
-                                                    <td><?= $ptw['services']; ?></td>
-                                                    <td><?= $ptw['exactLocation']; ?></td>
-                                                    <td><?= ($formattedDate . ' ' . $formattedTime); ?></td>
+                                                    <td><?= htmlspecialchars($ptw['id']); ?></td>
+                                                    <td><?= htmlspecialchars($ptw['name']); ?></td>
+                                                    <td><?= htmlspecialchars($ptw['services']); ?></td>
+                                                    <td><?= htmlspecialchars($ptw['exactLocation']); ?></td>
+                                                    <td><?= $formattedPermitDate; ?></td>
+                                                    <td class="bg-dark text-white">Overdue</td>
                                                     <td>
                                                         <a href="view1.php?id=<?= $ptw['id']; ?>" class="btn btn-info btn-sm">View</a>
-                                                        <form action="code.php" method="POST" class="d-inline"></form>
                                                     </td>
                                                 </tr>
                                                 <?php
@@ -83,7 +88,7 @@
                                         }
                                         else
                                         {
-                                            echo "<h5> No Record Found </h5>";
+                                            echo "<h5> No Overdue Records Found </h5>";
                                         }
                                     ?>
                                 </tbody>
@@ -94,21 +99,22 @@
             </div>
         </div>
     </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="script.js"></script>
     <script>
-        function confirmLogout() {
-        var confirmation = confirm("Are you sure you want to logout?");
-        return confirmation;
+    function confirmLogout() {
+        return confirm("Are you sure you want to logout?");
     }
     $(document).ready(function() {
-    $('#myTable').DataTable({
-        "order": [[0, "desc"]], // Sort by the first column in descending order
-        "paging": true,        // Enable pagination
-        "searching": true,     // Enable search box
-        "info": true           // Show table information
+        $('#myTable').DataTable({
+            "order": [[0, "desc"]],
+            "paging": true,
+            "searching": true,
+            "info": true
+        });
     });
-});
     </script>
+    <script src="script.js"></script>
 </body>
 </html>

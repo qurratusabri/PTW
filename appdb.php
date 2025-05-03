@@ -31,6 +31,13 @@
 	$queryPending = "SELECT * FROM form WHERE status = 'pending'";
 	$resultPending = mysqli_query($conn, $queryPending);
 	$pendingCount = mysqli_num_rows($resultPending);
+	
+	// Query for "Overdue" projects (today > durationTo AND still active)
+	$queryOverdue = "SELECT * FROM form 
+	WHERE durationTo < CURDATE() 
+	AND status NOT IN ('completed', 'cancel', 'stop work')";
+	$resultOverdue = mysqli_query($conn, $queryOverdue);
+	$overdueCount = mysqli_num_rows($resultOverdue);
 ?>
 <!doctype html>
 <html lang="en">
@@ -54,43 +61,8 @@
 		<title>Dashboard</title>
 	</head>
 	<body>
-		<div class="sidebar" id="sidebar">
-			<div class="top">
-				<div class="logo">
-					<i class="bx bx-hard-hat"></i>
-					<span>PermitToWork</span>
-				</div>
-				<i class="bx bx-menu" id="btn"></i>
-			</div>
-			<ul class="nav-list">
-				<li class="nav-item user-info" title="Logged in as: <?= htmlspecialchars($_SESSION['username']) ?>">
-					<a href="#">
-						<i class="bx bx-user"></i>
-						<span>Logged in as:<br><?= htmlspecialchars($_SESSION['username']) ?></span>
-					</a>
-				</li>
-				<li class="nav-item">
-					<a href="appdb.php" title="Dashboard">
-						<i class="bx bxs-grid-alt"></i>
-						<span>Dashboard</span>
-					</a>
-				</li>
-				<li class="nav-item">
-					<a href="form1.php" title="Form">
-						<i class="bx bx-file-blank"></i>
-						<span>Form</span>
-					</a>
-				</li>
-				<li class="nav-item">
-					<a href="logout.php" onclick="return confirmLogout();" title="Logout">
-						<i class="bx bx-log-out"></i>
-						<span>Logout</span>
-					</a>
-				</li>
-			</ul>
-		</div>
-		
-		
+		<!-- Sidebar -->
+		<?php include 'sidebar.php'; ?>
 		
 		<div class="main-content" id="main-content">
 			<div class="row">
@@ -197,6 +169,26 @@
 								</div>
 							</a>
 						</div>
+						<!-- Overdue Card -->
+						<div class="col-md-3 mb-2">
+							<a href="overdue1.php?status=overdue" class="text-white text-decoration-none">
+								<div class="card status-card bg-dark text-white">
+									<div class="card-header">
+										<h4>Overdue</h4>
+									</div>
+									<div class="card-body">
+										<h1><?= $overdueCount; ?></h1>
+										<p>Projects past their permit end date</p>
+										<hr>
+										<ul>
+											<?php while ($row = mysqli_fetch_assoc($resultOverdue)) : ?>
+											<!-- Example: <li><?= $row['name']; ?></li> -->
+											<?php endwhile; ?>
+										</ul>
+									</div>
+								</div>
+							</a>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -223,7 +215,7 @@
 										<th>Applicant's Name</th>
 										<th>Services</th>
 										<th>Area / Location Of Work</th>
-										<th>Submission Date</th>
+										<th>Work Duration</th>
 										<th>Status</th>
 										<th>Action</th>
 									</tr>
@@ -236,16 +228,21 @@
 										if (mysqli_num_rows($query_run) > 0) {
 											foreach ($query_run as $ptw) {
 												// Format the date to dd/mm/yy 
-												$dateTime = new DateTime($ptw['date']); 
+												$dateTime = new DateTime($ptw['date']);
 												$formattedDate = $dateTime->format('d/m/y');
 												$formattedTime = $dateTime->format('h:i A');
+												
+												$dateFrom = new DateTime($ptw['durationFrom']); 
+												$dateTo = new DateTime($ptw['durationTo']); 
+												$formatteddateFrom = $dateFrom->format('d/m/y');
+												$formatteddateTo = $dateTo->format('d/m/y');
 											?>
 											<tr>
 												<td><?= htmlspecialchars($ptw['id']); ?></td>
 												<td><?= htmlspecialchars($ptw['name']); ?></td>
 												<td><?= htmlspecialchars($ptw['services']); ?></td>
 												<td><?= htmlspecialchars($ptw['exactLocation']); ?></td>
-												<td><?= htmlspecialchars($formattedDate . ' ' . $formattedTime); ?></td>
+												<td><?= htmlspecialchars($formatteddateFrom . ' - ' . $formatteddateTo); ?></td>
 												<td class="<?= $ptw['status'] == 'in progress' ? 'bg-warning' : ($ptw['status'] == 'completed' ? 'bg-success' : ($ptw['status'] == 'stop work' ? 'bg-secondary' : ($ptw['status'] == 'cancel' ? 'bg-danger' : ($ptw['status'] == 'pending' ? 'bg-primary' : '')))) ?>"> 
 													<?= $ptw['status'] == 'in progress' ? 'In progress' : ($ptw['status'] == 'completed' ? 'Completed' : ($ptw['status'] == 'stop work' ? 'Stop Work' : ($ptw['status'] == 'cancel' ? 'Cancel' : ($ptw['status'] == 'pending' ? 'Pending' : '')))) ?>
 												</td>

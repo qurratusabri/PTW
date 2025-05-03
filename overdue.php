@@ -37,21 +37,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="top">
-            <div class="logo">
-                <i class="bx bx-hard-hat"></i>
-                <span>PermitToWork</span>
-            </div>
-            <i class="bx bx-menu" id="btn"></i>
-        </div>
-        <ul>
-            <li><a href="dashboard.php"><i class="bx bxs-grid-alt"></i><span class="nav-item">Dashboard</span></a></li>
-            <li><a href="form.php"><i class="bx bx-file-blank"></i><span class="nav-item">Form</span></a></li>
-            <li><a href="services.php"><i class="bx bx-add-to-queue"></i><span class="nav-item">Services</span></a></li>
-            <li><a href="logout.php" onclick="return confirmLogout();"><i class="bx bx-log-out"></i><span class="nav-item">Logout</span></a></li>
-        </ul>
-    </div>
+	<?php include 'sidebar.php'; ?>
 
     <!-- Main Content -->
     <div class="main-content" id="main-content">

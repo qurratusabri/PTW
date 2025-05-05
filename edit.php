@@ -305,6 +305,8 @@
 													<input type="time" name="timeTo" value="<?=$ptw['timeTo'];?>" class="form-control">
 												</div>
 											</div>
+											<br>
+											<hr>
 											<div class="row mb-3">
 												<h4>CONTRACTOR</h4>
 												<div class="col-md-4">
@@ -359,6 +361,8 @@
 													<input type="text" name="exactLocation" value="<?=$ptw['exactLocation'];?>" class="form-control">
 												</div>
 											</div>
+											
+											<hr>
 											<div class="row mb-4">
 												<div class="col-md-4">
 													<h4>TYPE OF WORK</h4>
@@ -486,6 +490,7 @@
 													<label for="painting">Painting Mask</label><br>
 												</div>
 											</div>
+											<hr>
 											<div class="row mb-4">
 												<div class="col-md-4">
 													<h4>HAZARD ANALYSIS</h4>
@@ -538,6 +543,7 @@
 													
 												</div>
 											</div>
+											<hr>
 											<div class="row mb-3">
 												<h4>SAFETY BRIEFING RECORD</h4>
 												<div class="col-md-4">
@@ -551,6 +557,8 @@
 													<input type="text" name="briefConducted" value="<?=$ptw['briefConducted'];?>" class="form-control">
 												</div>
 											</div>
+											<br>
+											<hr>
 											<div class="row mb-3">
 												<h4>Permit Authorisation Section</h4>
 												
@@ -638,6 +646,8 @@
 													<input type="time" name="timeS" class="form-control" value="<?= htmlspecialchars($permit['timeS'] ?? '') ?>">
 												</div>
 											</div>
+											<br>
+											<hr>
 											<div class="row mb-3">
 												<div class="row mb-3">
 													<div class="col-md-4">
@@ -666,32 +676,18 @@
 													</div>
 												</div>
 											</div>
+											<hr>
 											<div class="row mb-3">
 												<div class="row mb-3" id="file-upload-wrapper">
-													<!-- Upload Section -->
-													<div class="row mb-3" id="file-upload-wrapper">
-														<h4>Upload Files</h4>
-														
-														<!-- File Input -->
-														<div class="col-md-6 mb-2 file-upload-group">
-															<input type="file" name="files[]" class="form-control file-input" accept=".pdf,.jpg,.png,.jpeg">
-														</div>
-														
-														<!-- Add More Button -->
-														<div class="col-md-6">
-															<button type="button" id="add-more-files" class="btn btn-secondary">
-																+ Add Another File
-															</button>
-														</div>
-														
-														<!-- Selected File Preview -->
-														<div class="col-md-12 mt-3">
-															<h5>Selected Files</h5>
-															<ul id="selected-files-list" class="list-group"></ul>
+													<div class="row mb-3">
+														<div class="col-md-4">
+															<h4 for="file">Upload Files</h4>
+															<input type="file" name="files[]" id="file" multiple>
 														</div>
 													</div>
-													
-													
+													<br>
+													<hr>
+													<br>
 													
 													<?php if (!empty($permit['file'])): ?>
 													<h5>Existing Uploaded Files</h5>
@@ -715,9 +711,6 @@
 															<a href="<?= htmlspecialchars($file) ?>" target="_blank" class="file-name">
 																<?= htmlspecialchars($fileName) ?>
 															</a>
-															<span class="delete-btn" onclick="deleteExistingFile(<?= $index ?>, '<?= addslashes($file) ?>')">
-																<i class="fas fa-trash-alt"></i>
-															</span>
 														</div>
 														<?php endforeach; ?>
 													</div>

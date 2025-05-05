@@ -63,6 +63,72 @@
 					$worksiteArray = !empty($ptw['worksite']) ? explode(", ", $ptw['worksite']) : [];
 					$infectionArray = !empty($ptw['infection']) ? explode(", ", $ptw['infection']) : [];
 					
+					$workTypeOthersText = '';
+					$worksiteOthersText = '';
+					$hazardsOthersText = '';
+					$infectionOthersText = '';
+					
+					$predefinedWorkTypes = [
+					"Aircond / Chiller", "Pest Control", "Civil / Structural", "Roofing", "Sewage",
+					"Furniture", "Painting (internal / external)", "Flooring", "Wiring", "Electrical",
+					"Plumbing", "Cabling", "Maintenance", "HEPA filter Servicing", "High Dusting",
+					"Exterior facade cleaning", "Renovation", "PPM", "Corrective Maintenance", "Equipment breakdown"
+					];
+					
+					$predefinedWorksites = [
+					"Site prepared as informed", "Scaffold Required", "Toxic Fumes Detector",
+					"PMA / PMT e.g crane", "Gas Detector", "Forced Ventilation", "Equipment Isolated",
+					"LOTO", "Additional Fire Extinguisher / blanket", "Equipment / Line Drained / Blinded",
+					"Area Barricaded / Signed", "Confined Space", "Secure Tools from Falling",
+					"Noise / Dust Insulation", "Ladder / Step Stool", "Spillage Kits",
+					"Inform Workers In and the Next Area", "Hot work"
+					];
+					
+					$predefinedHazards = [
+					"Mechanical", "Biological", "Electrical", "Chemical", "Working > 24 hours"
+					];
+					
+					$predefinedInfectionControls = [
+					"Wet floor mat", "Canvas", "Seal the area (dust prevention)", "Assigned designated lift",
+					"Exhaust ventilation (no broom)", "Assigned designated entry / exit", "Low odour chemicals",
+					"Wet mop with disinfectant", "Clean / Dirty Shoes", "Negative pressure",
+					"Waste segregation required", "Provide covered waste Bin"
+					];
+					
+					// For workType
+					foreach ($workTypeArray as $key => $type) {
+						if (!in_array($type, $predefinedWorkTypes)) {
+							$workTypeOthersText = $type;
+							unset($workTypeArray[$key]);
+							break; // only one "others" text
+						}
+					}
+					
+					// For worksite
+					foreach ($worksiteArray as $key => $site) {
+						if (!in_array($site, $predefinedWorksites)) {
+							$worksiteOthersText = $site;
+							unset($worksiteArray[$key]);
+							break; // only one "others" text
+						}
+					}
+					
+					foreach ($hazardsArray as $key => $hazard) {
+						if (!in_array($hazard, $predefinedHazards)) {
+							$hazardsOthersText = $hazard;
+							unset($hazardsArray[$key]);
+							break;
+						}
+					}
+					
+					foreach ($infectionArray as $key => $inf) {
+						if (!in_array($inf, $predefinedInfectionControls)) {
+							$infectionOthersText = $inf;
+							unset($infectionArray[$key]);
+							break;
+						}
+					}
+					
 					$workerNamesArray = !empty($ptw['workersName']) ? explode(", ", $ptw['workersName']) : [];
 					$passNoArray = !empty($ptw['passNo']) ? explode(", ", $ptw['passNo']) : [];
 					
@@ -337,9 +403,10 @@
 													<label for="cm">Corrective Maintenance</label><br>
 													<input type="checkbox" name="workType[]" value="Equipment breakdown" <?php echo in_array('Equipment breakdown', $workTypeArray) ? 'checked' : ''; ?>>
 													<label for="eb">Equipment breakdown</label><br>
-													<input type="checkbox" id="workType_other_checkbox" value="others">
+													<input type="checkbox" id="workType_other_checkbox" value="others" <?php echo !empty($workTypeOthersText) ? 'checked' : ''; ?>>
 													<label for="workType_other_checkbox">Others:</label><br>
-													<textarea id="workType_other_text" name="workType[]" class="form-control" style="display: none;" placeholder="Specify other work type"></textarea>
+													<textarea id="workType_other_text" name="workType[]" class="form-control" style="<?php echo !empty($workTypeOthersText) ? '' : 'display: none;'; ?>" placeholder="Specify other work type"><?= htmlspecialchars($workTypeOthersText); ?></textarea>
+													
 												</div>
 												<div class="col-md-4">
 													<h4>WORKSITE PREPARATION / PRECAUTIONS</h4>
@@ -380,9 +447,10 @@
 													<label for="inform">Inform Workers In and the Next Area</label><br>
 													<input type="checkbox" name="worksite[]" value="Hot work" <?php echo in_array('Hot work', $worksiteArray) ? 'checked' : ''; ?>>
 													<label for="hot">Hot work</label><br>
-													<input type="checkbox" id="worksite_other_checkbox" value="others">
+													<input type="checkbox" id="worksite_other_checkbox" value="others" <?php echo !empty($worksiteOthersText) ? 'checked' : ''; ?>>
 													<label for="worksite_other_checkbox">If Others please state:</label><br>
-													<textarea id="worksite_other_text" name="worksite[]" class="form-control" style="display: none;" placeholder="Specify other worksite preparation"></textarea>
+													<textarea id="worksite_other_text" name="worksite[]" class="form-control" style="<?php echo !empty($worksiteOthersText) ? '' : 'display: none;'; ?>" placeholder="Specify other worksite preparation"><?= htmlspecialchars($worksiteOthersText); ?></textarea>
+													
 												</div>                                    
 												<div class="col-md-4">
 													<h4>PERSONAL PROTECTIVE EQUIPMENTS</h4>
@@ -433,9 +501,10 @@
 													<label for="others">Others:</label><br>
 													<input type="checkbox" name="hazards[]" value="Working > 24 hours" <?php echo in_array('Working > 24 hours', $hazardsArray) ? 'checked' : ''; ?>>
 													<label for="others">Working > 24 hours</label><br>
-													<input type="checkbox" id="hazards_other_checkbox" value="others">
+													<input type="checkbox" id="hazards_other_checkbox" value="others" <?php echo !empty($hazardsOthersText) ? 'checked' : ''; ?>>
 													<label for="hazards_other_checkbox">Others:</label><br>
-													<textarea id="hazards_other_text" name="hazards[]" class="form-control" style="display: none;" placeholder="Specify other hazard"></textarea>
+													<textarea id="hazards_other_text" name="hazards[]" class="form-control" style="<?php echo !empty($hazardsOthersText) ? '' : 'display: none;'; ?>" placeholder="Specify other hazard"><?= htmlspecialchars($hazardsOthersText); ?></textarea>
+													
 												</div>
 												<div class="col-md-4">
 													<h4>INFECTION CONTROL</h4>
@@ -463,9 +532,10 @@
 													<label for="segregation">Waste segregation required</label><br>
 													<input type="checkbox" name="infection[]" value="Provide covered waste Bin" <?php echo in_array('Provide covered waste Bin', $infectionArray) ? 'checked' : ''; ?>>
 													<label for="provide">Provide covered waste Bin</label><br>
-													<input type="checkbox" id="infection_other_checkbox" value="others">
+													<input type="checkbox" id="infection_other_checkbox" value="others" <?php echo !empty($infectionOthersText) ? 'checked' : ''; ?>>
 													<label for="infection_other_checkbox">Others:</label><br>
-													<textarea id="infection_other_text" name="infection[]" class="form-control" style="display: none;" placeholder="Specify other infection"></textarea>
+													<textarea id="infection_other_text" name="infection[]" class="form-control" style="<?php echo !empty($infectionOthersText) ? '' : 'display: none;'; ?>" placeholder="Specify other infection"><?= htmlspecialchars($infectionOthersText); ?></textarea>
+													
 												</div>
 											</div>
 											<div class="row mb-3">
@@ -711,6 +781,7 @@
 					remarkField.required = false;
 				}
 			}
+			input.style.display = (checkbox.checked || input.value.trim() !== "") ? "block" : "none";
 			function confirmLogout() {
 				var confirmation = confirm("Are you sure you want to logout?");
 				return confirmation;
@@ -825,4 +896,4 @@
 					});
 				</script>	
 			</body>
-		</html>																
+		</html>																												

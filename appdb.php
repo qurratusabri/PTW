@@ -63,7 +63,7 @@
 	<body>
 		<!-- Sidebar -->
 		<?php include 'sidebar.php'; ?>
-		
+		<?php include('message.php'); ?>
 		<div class="main-content" id="main-content">
 			<div class="row">
 				<div class="user-label">

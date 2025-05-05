@@ -13,7 +13,7 @@
 	require 'PHPMailer/src/PHPMailer.php';
 	require 'PHPMailer/src/SMTP.php';
 	
-	function sendAdminNotification($userName, $formId, $senderName, $companyName, $durationFrom, $durationTo, $timeFrom, $timeTo, $services, $workTypes, $exactLocation) {
+	function sendAdminNotification($userName, $formId, $senderName, $companyName, $durationFrom, $durationTo, $timeFrom, $timeTo, $services, $workTypesString, $exactLocation) {
 		$mail = new PHPMailer(true);
 		try {
 			// Gmail SMTP Configuration
